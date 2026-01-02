@@ -49,7 +49,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
 from . import EltakoConfigEntry
-from .const import CONF_DEVICE_MODEL, DOMAIN, MANUFACTURER
+from .const import CONF_DEVICE_MODEL, DOMAIN
 from .device import MODELS, SensorEntities
 from .entity import EltakoEntity
 from .gateway import EnOceanGateway
@@ -707,13 +707,13 @@ class GatewayLastReceivedMessage(SensorEntity):
         entity_category=EntityCategory.DIAGNOSTIC,
     )
 
-    def __init__(
-        self, config_entry: ConfigEntry, gw: EnOceanGateway, device_info: DeviceInfo
-    ) -> None:
+    def __init__(self, config_entry: ConfigEntry, gw: EnOceanGateway) -> None:
         """Initialize the Eltako gateway last message received sensor."""
         self._attr_gateway = gw
         self._attr_unique_id = f"{config_entry.unique_id}_{self.entity_description.key}"
-        self._attr_device_info = device_info
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, config_entry.unique_id)}
+        )
         self._attr_native_value = None
 
     async def async_added_to_hass(self) -> None:
@@ -738,13 +738,13 @@ class GatewayReceivedMessagesInActiveSession(SensorEntity):
         state_class=SensorStateClass.TOTAL_INCREASING,
     )
 
-    def __init__(
-        self, config_entry: ConfigEntry, gw: EnOceanGateway, device_info: DeviceInfo
-    ) -> None:
+    def __init__(self, config_entry: ConfigEntry, gw: EnOceanGateway) -> None:
         """Initialize the Eltako gateway received message count sensor."""
         self._attr_gateway = gw
         self._attr_unique_id = f"{config_entry.unique_id}_{self.entity_description.key}"
-        self._attr_device_info = device_info
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, config_entry.unique_id)}
+        )
         self._attr_native_value = 0
 
     async def async_added_to_hass(self) -> None:
@@ -814,15 +814,7 @@ async def async_setup_entry(
             if sensor_class:
                 entities.append(sensor_class(hass, subentry, gateway))
 
-    device_info = DeviceInfo(
-        identifiers={(DOMAIN, gateway.unique_id)},
-        name=gateway.dev_name,
-        manufacturer=MANUFACTURER,
-        model=gateway.model,
-    )
-    entities.append(GatewayLastReceivedMessage(config_entry, gateway, device_info))
-    entities.append(
-        GatewayReceivedMessagesInActiveSession(config_entry, gateway, device_info)
-    )
+    entities.append(GatewayLastReceivedMessage(config_entry, gateway))
+    entities.append(GatewayReceivedMessagesInActiveSession(config_entry, gateway))
 
     async_add_entities(entities)

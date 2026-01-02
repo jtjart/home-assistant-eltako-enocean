@@ -47,7 +47,7 @@ class EltakoStandardSwitch(EltakoEntity, SwitchEntity):
         msg = A5_38_08(command=0x01, switching=switching).encode_message(address)
         await self.async_send_message(msg)
 
-        if self.gateway.fast_status_change():
+        if self.gateway.fast_status_change:
             self._attr_is_on = True
             self.schedule_update_ha_state()
 
@@ -59,7 +59,7 @@ class EltakoStandardSwitch(EltakoEntity, SwitchEntity):
         msg = A5_38_08(command=0x01, switching=switching).encode_message(address)
         await self.async_send_message(msg)
 
-        if self.gateway.fast_status_change():
+        if self.gateway.fast_status_change:
             self._attr_is_on = False
             self.schedule_update_ha_state()
 

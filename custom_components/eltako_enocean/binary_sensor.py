@@ -30,7 +30,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import EltakoConfigEntry
-from .const import CONF_DEVICE_MODEL, DOMAIN, MANUFACTURER
+from .const import CONF_DEVICE_MODEL, DOMAIN
 from .device import MODELS, BinarySensorEntities
 from .entity import EltakoEntity
 from .gateway import EnOceanGateway
@@ -287,12 +287,7 @@ class GatewayConnectionState(BinarySensorEntity):
         """Initialize the Eltako gateway connection state sensor."""
         self._attr_gateway = gw
         self._attr_unique_id = f"{config_entry.unique_id}_{self.entity_description.key}"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, gw.unique_id)},
-            name=gw.dev_name,
-            manufacturer=MANUFACTURER,
-            model=gw.model,
-        )
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, gw.unique_id)})
 
     async def async_added_to_hass(self) -> None:
         """Call when entity about to be added to hass. Register callback."""

@@ -60,7 +60,7 @@ class EltakoDimmableLight(EltakoEntity, LightEntity):
         msg = A5_38_08(command=0x02, dimming=dimming).encode_message(address)
         await self.async_send_message(msg)
 
-        if self.gateway.fast_status_change():
+        if self.gateway.fast_status_change:
             self._attr_brightness = brightness
             self._attr_is_on = True
             self.schedule_update_ha_state()
@@ -73,7 +73,7 @@ class EltakoDimmableLight(EltakoEntity, LightEntity):
         msg = A5_38_08(command=0x02, dimming=dimming).encode_message(address)
         await self.async_send_message(msg)
 
-        if self.gateway.fast_status_change():
+        if self.gateway.fast_status_change:
             self._attr_brightness = 0
             self._attr_is_on = False
             self.schedule_update_ha_state()
@@ -126,7 +126,7 @@ class EltakoSwitchableLight(EltakoEntity, LightEntity):
         msg = A5_38_08(command=0x01, switching=switching).encode_message(address)
         await self.async_send_message(msg)
 
-        if self.gateway.fast_status_change():
+        if self.gateway.fast_status_change:
             self._attr_is_on = True
             self.schedule_update_ha_state()
 
@@ -138,7 +138,7 @@ class EltakoSwitchableLight(EltakoEntity, LightEntity):
         msg = A5_38_08(command=0x01, switching=switching).encode_message(address)
         await self.async_send_message(msg)
 
-        if self.gateway.fast_status_change():
+        if self.gateway.fast_status_change:
             self._attr_is_on = False
             self.schedule_update_ha_state()
 

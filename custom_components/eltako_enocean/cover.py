@@ -60,8 +60,8 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
         self._attr_is_closed = None  # means undefined state
         self._attr_current_cover_position = None
         self._attr_current_cover_tilt_position = None
-        self._time_closes = config_entry.data.get(CONF_TIME_CLOSES)
-        self._time_opens = config_entry.data.get(CONF_TIME_OPENS)
+        self._time_closes = int(config_entry.data.get(CONF_TIME_CLOSES))
+        self._time_opens = int(config_entry.data.get(CONF_TIME_OPENS))
         self._time_tilts = config_entry.data.get(CONF_TIME_TILTS)
 
         self._attr_supported_features = (
@@ -86,7 +86,7 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
         msg = H5_3F_7F(moving_time, 0x01, 1).encode_message(address)
         await self.async_send_message(msg)
 
-        if self.gateway.fast_status_change():
+        if self.gateway.fast_status_change:
             self._attr_is_opening = True
             self._attr_is_closing = False
             self.schedule_update_ha_state()
@@ -103,7 +103,7 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
         msg = H5_3F_7F(moving_time, 0x02, 1).encode_message(address)
         await self.async_send_message(msg)
 
-        if self.gateway.fast_status_change():
+        if self.gateway.fast_status_change:
             self._attr_is_closing = True
             self._attr_is_opening = False
 
@@ -137,13 +137,15 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
                 ((self._attr_current_cover_position - position) / 100.0)
                 * self._time_closes
             )
+        else:
+            moving_time = 0
 
         command = 0x01 if direction == DIRECTION_UP else 0x02
         moving_time = max(1, min(moving_time, 255))
         msg = H5_3F_7F(moving_time, command, 1).encode_message(address)
         await self.async_send_message(msg)
 
-        if self.gateway.fast_status_change():
+        if self.gateway.fast_status_change:
             if direction == DIRECTION_UP:
                 self._attr_is_opening = True
                 self._attr_is_closing = False
@@ -159,7 +161,7 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
         msg = H5_3F_7F(0, 0x00, 1).encode_message(address)
         await self.async_send_message(msg)
 
-        if self.gateway.fast_status_change():
+        if self.gateway.fast_status_change:
             self._attr_is_closing = False
             self._attr_is_opening = False
             self.schedule_update_ha_state()

@@ -137,11 +137,11 @@ class DevicesSubentryFlowHandler(ConfigSubentryFlow):
         )
 
     # TODO
-    async def async_step_sensor(self, user_input=None) -> ConfigFlowResult:
+    async def async_step_sensor(self, user_input=None) -> SubentryFlowResult:
         """Add a sensor device."""
         return self.async_abort(reason="not_implemented yet")
 
-    async def async_step_actuator(self, user_input=None) -> ConfigFlowResult:
+    async def async_step_actuator(self, user_input=None) -> SubentryFlowResult:
         """Select the actuator type to add."""
         return self.async_show_menu(
             step_id="actuator",
@@ -152,7 +152,7 @@ class DevicesSubentryFlowHandler(ConfigSubentryFlow):
             ],
         )
 
-    async def async_step_cover(self, user_input=None) -> ConfigFlowResult:
+    async def async_step_cover(self, user_input=None) -> SubentryFlowResult:
         """Add a cover device."""
         errors: dict[str, str] = {}
 
@@ -193,7 +193,7 @@ class DevicesSubentryFlowHandler(ConfigSubentryFlow):
             step_id="cover", data_schema=data_schema, errors=errors
         )
 
-    async def async_step_switch(self, user_input=None) -> ConfigFlowResult:
+    async def async_step_switch(self, user_input=None) -> SubentryFlowResult:
         """Add a switch device."""
         errors: dict[str, str] = {}
 
@@ -224,7 +224,7 @@ class DevicesSubentryFlowHandler(ConfigSubentryFlow):
             step_id="switch", data_schema=data_schema, errors=errors
         )
 
-    async def async_step_light(self, user_input=None) -> ConfigFlowResult:
+    async def async_step_light(self, user_input=None) -> SubentryFlowResult:
         """Add a light device."""
         errors: dict[str, str] = {}
 
