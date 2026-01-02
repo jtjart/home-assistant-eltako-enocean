@@ -1,1 +1,14 @@
-
+{
+  "domain": "eltako_enocean",
+  "name": "Eltako (EnOcean)",
+  "codeowners": ["@jtjart"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/jtjart/home-assistant-eltako",
+  "integration_type": "hub",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/jtjart/home-assistant-eltako/issues",
+  "loggers": ["eltako"],
+  "requirements": ["eltako14bus==0.0.61", "enocean>=0.60.1", "esp2-gateway-adapter==0.2.11"],
+  "version": "0.1.0"
+}

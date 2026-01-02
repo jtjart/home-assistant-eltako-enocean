@@ -1,0 +1,167 @@
+{
+  "common": {},
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up the Eltako gateway",
+        "data": {
+          "name": "Name",
+          "gateway_model": "Gateway type",
+          "serial_path": "USB gateway path",
+          "id": "Gateway ID",
+          "auto_reconnect": "Automatic reconnection",
+          "message_delay": "Message delay (ms)",
+          "fast_status_change": "Fast status change"
+        }
+      }
+    },
+    "error": {
+      "invalid_gateway_path": "Invalid gateway path",
+      "invalid_id": "The ID must be in the format XX-XX-XX-XX where X is a hexadecimal digit (0-9, A-F)",
+      "no_serial_ports": "No serial ports found. Please connect your gateway and try again."
+    },
+    "abort": {}
+  },
+  "config_subentries" : {
+    "devices": {
+      "title": "Eltako device",
+      "step": {
+        "user": {
+          "title": "Select which device type to add",
+          "menu_options": {
+            "sensor": "Sensor",
+            "actuator": "Actuator"
+          }
+        },
+        "sensor": {
+          "title": "Select the sensor to add",
+          "menu_options": {
+            "TBD": ""
+          }
+        },
+        "actuator": {
+          "title": "Select the actuator to add",
+          "menu_options": {
+            "cover": "Cover",
+            "switch": "Switch",
+            "light": "Light"
+          }
+        },
+        "cover": {
+          "title": "Add a cover device",
+          "data": {
+            "name": "Name",
+            "gateway_entry_id": "Gateway",
+            "id": "Device ID",
+            "device_model": "Device model",
+            "sender_id": "Sender ID",
+            "device_class": "Device class",
+            "time_closes": "Time to close (seconds)",
+            "time_opens": "Time to open (seconds)",
+            "time_tilts": "Time to tilt (seconds)"
+          }
+        },
+        "switch": {
+          "title": "Add a switch device",
+          "data": {
+            "name": "Name",
+            "gateway_entry_id": "Gateway",
+            "id": "Device ID",
+            "device_model": "Device model",
+            "sender_id": "Sender ID"
+          }
+        },
+        "light": {
+          "title": "Add a light device",
+          "data": {
+            "name": "Name",
+            "gateway_entry_id": "Gateway",
+            "id": "Device ID",
+            "device_model": "Device model",
+            "sender_id": "Sender ID"
+          }
+        }
+      },
+      "error": {
+        "invalid_cover_time": "You need to fill either no or both cover times (open and close).",
+        "invalid_id": "[%key:component::eltako_enocean::config::error:::invalid_id%]"
+      },
+      "abort": {}
+    }
+  },
+  "options": {},
+  "selector": {
+    "platform": {
+      "options": {
+        "switch": "Switch",
+        "light": "Light"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "contact": {
+        "name": "Contact"
+      },
+      "digital_input": {
+        "name": "Digital input {index}"
+      },
+      "status_of_wake": {
+        "name": "Status of wake"
+      },
+      "weather_station_rain": {
+        "name": "Rain"
+      },
+      "window_tilt": {
+        "name": "Window tilt"
+      }
+    },
+    "button": {
+      "reconnect_gateway": {
+        "name": "Reconnect gateway"
+      }
+    },
+    "cover": {},
+    "light": {},
+    "sensor": {
+      "gas_flow_rate": {
+        "name": "Gas flow rate"
+      },
+      "gas_meter": {
+        "name": "Gas meter"
+      },
+      "last_message_received": {
+        "name": "Last message received"
+      },
+      "pir": {
+        "name": "PIR"
+      },
+      "received_messages_per_session": {
+        "name": "Received messages per session",
+        "unit_of_measurement": "Messages"
+      },
+      "target_temperature": {
+        "name": "Target temperature"
+      },
+      "water_flow_rate": {
+        "name": "Water flow rate"
+      },
+      "water_meter": {
+        "name": "Water meter"
+      },
+      "weather_station_illuminance_dawn": {
+        "name": "Illuminance (dawn)"
+      },
+      "weather_station_illuminance_central": {
+        "name": "Illuminance (central)"
+      },
+      "weather_station_illuminance_east": {
+        "name": "Illuminance (east)"
+      },
+      "weather_station_illuminance_west": {
+        "name": "Illuminance (west)"
+      }
+    },
+    "switch": {}
+  }
+}

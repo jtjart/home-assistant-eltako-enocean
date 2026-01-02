@@ -1,0 +1,18 @@
+{
+  "entity": {
+    "sensor": {
+      "gas_flow_rate": {
+        "default": "mdi:meter-gas"
+      },
+      "received_messages_per_session": {
+        "default": "mdi:message-check"
+      },
+      "water_flow_rate": {
+        "default": "mdi:water"
+      },
+      "weather_station_illuminance_dawn": {
+        "default": "mdi:weather-sunset"
+      }
+    }
+  }
+}
