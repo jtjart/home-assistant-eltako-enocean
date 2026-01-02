@@ -52,7 +52,7 @@ def _validate_cover_times(user_input):
         raise SchemaFlowError(CONF_TIME_OPENS, "invalid_cover_time")
 
 
-def _validate_gateway_path(self, user_input: dict[str, Any]):
+def _validate_gateway_path(user_input: dict[str, Any]):
     """Return True if the provided path points to a valid serial port, False otherwise."""
 
     serial_path: str = user_input[CONF_SERIAL_PORT]
