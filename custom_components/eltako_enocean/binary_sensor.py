@@ -23,6 +23,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
@@ -47,7 +48,7 @@ class EltakoBinarySensorEntityDescription(BinarySensorEntityDescription):
 class EltakoOccupancySensor(EltakoEntity, BinarySensorEntity):
     """Representation of an Eltako occupancy sensor."""
 
-    entity_description = BinarySensorEntityDescription(
+    entity_description = EltakoBinarySensorEntityDescription(
         key="occupancy",
         device_class=BinarySensorDeviceClass.MOTION,
     )
@@ -80,7 +81,7 @@ class EltakoOccupancySensor_A5_08_01(EltakoOccupancySensor):
 class EltakoContactSensor_A5_30_01(EltakoEntity, BinarySensorEntity):
     """Representation of an Eltako contact sensor (A5-30-01)."""
 
-    entity_description = BinarySensorEntityDescription(
+    entity_description = EltakoBinarySensorEntityDescription(
         key="contact", translation_key="contact"
     )
 
@@ -97,7 +98,7 @@ class EltakoContactSensor_A5_30_01(EltakoEntity, BinarySensorEntity):
 class EltakoContactSensor_D5_00_01(EltakoEntity, BinarySensorEntity):
     """Representation of an Eltako contact sensor (D5-00-01)."""
 
-    entity_description = BinarySensorEntityDescription(
+    entity_description = EltakoBinarySensorEntityDescription(
         key="contact", translation_key="contact"
     )
 
@@ -113,7 +114,7 @@ class EltakoContactSensor_D5_00_01(EltakoEntity, BinarySensorEntity):
 class EltakoLowBatterySensor_A5_30_01(EltakoEntity, BinarySensorEntity):
     """Representation of an Eltako low battery sensor (A5-30-01)."""
 
-    entity_description = BinarySensorEntityDescription(
+    entity_description = EltakoBinarySensorEntityDescription(
         key="low_battery",
         device_class=BinarySensorDeviceClass.BATTERY,
     )
@@ -131,7 +132,7 @@ class EltakoLowBatterySensor_A5_30_01(EltakoEntity, BinarySensorEntity):
 class EltakoDigitalInputSensor_0_A5_30_03(EltakoEntity, BinarySensorEntity):
     """Representation of an Eltako digital input sensor 0 (A5-30-03)."""
 
-    entity_description = BinarySensorEntityDescription(
+    entity_description = EltakoBinarySensorEntityDescription(
         key="digital_input_0",
         translation_key="digital_input",
         translation_placeholders={"index": "0"},
@@ -150,7 +151,7 @@ class EltakoDigitalInputSensor_0_A5_30_03(EltakoEntity, BinarySensorEntity):
 class EltakoDigitalInputSensor_1_A5_30_03(EltakoEntity, BinarySensorEntity):
     """Representation of an Eltako digital input sensor 1 (A5-30-03)."""
 
-    entity_description = BinarySensorEntityDescription(
+    entity_description = EltakoBinarySensorEntityDescription(
         key="digital_input_1",
         translation_key="digital_input",
         translation_placeholders={"index": "1"},
@@ -169,7 +170,7 @@ class EltakoDigitalInputSensor_1_A5_30_03(EltakoEntity, BinarySensorEntity):
 class EltakoDigitalInputSensor_2_A5_30_03(EltakoEntity, BinarySensorEntity):
     """Representation of an Eltako digital input sensor 2 (A5-30-03)."""
 
-    entity_description = BinarySensorEntityDescription(
+    entity_description = EltakoBinarySensorEntityDescription(
         key="digital_input_2",
         translation_key="digital_input",
         translation_placeholders={"index": "2"},
@@ -188,7 +189,7 @@ class EltakoDigitalInputSensor_2_A5_30_03(EltakoEntity, BinarySensorEntity):
 class EltakoDigitalInputSensor_3_A5_30_03(EltakoEntity, BinarySensorEntity):
     """Representation of an Eltako digital input sensor 3 (A5-30-03)."""
 
-    entity_description = BinarySensorEntityDescription(
+    entity_description = EltakoBinarySensorEntityDescription(
         key="digital_input_3",
         translation_key="digital_input",
         translation_placeholders={"index": "3"},
@@ -207,7 +208,7 @@ class EltakoDigitalInputSensor_3_A5_30_03(EltakoEntity, BinarySensorEntity):
 class EltakoWakeSensor_A5_30_03(EltakoEntity, BinarySensorEntity):
     """Representation of an Eltako wake sensor (A5-30-03)."""
 
-    entity_description = BinarySensorEntityDescription(
+    entity_description = EltakoBinarySensorEntityDescription(
         key="status_of_wake", translation_key="status_of_wake"
     )
 
@@ -224,7 +225,7 @@ class EltakoWakeSensor_A5_30_03(EltakoEntity, BinarySensorEntity):
 class EltakoWindowSensor_F6_10_00(EltakoEntity, BinarySensorEntity):
     """Representation of an Eltako window sensor (F6-10-00)."""
 
-    entity_description = BinarySensorEntityDescription(
+    entity_description = EltakoBinarySensorEntityDescription(
         key="window", device_class=BinarySensorDeviceClass.WINDOW
     )
 
@@ -239,7 +240,7 @@ class EltakoWindowSensor_F6_10_00(EltakoEntity, BinarySensorEntity):
 class EltakoWindowTiltSensor_F6_10_00(EltakoEntity, BinarySensorEntity):
     """Representation of an Eltako window tilt sensor (F6-10-00)."""
 
-    entity_description = BinarySensorEntityDescription(
+    entity_description = EltakoBinarySensorEntityDescription(
         key="window_tilt",
         translation_key="window_tilt",
         device_class=BinarySensorDeviceClass.WINDOW,
@@ -276,15 +277,16 @@ class EltakoWeatherStationRainSensor(EltakoEntity, BinarySensorEntity):
 class GatewayConnectionState(BinarySensorEntity):
     """Protocols last time when message received."""
 
-    entity_description = BinarySensorEntityDescription(
+    entity_description = EltakoBinarySensorEntityDescription(
         key="connection_state",
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
         entity_category=EntityCategory.DIAGNOSTIC,
     )
 
-    def __init__(self, gw: EnOceanGateway) -> None:
+    def __init__(self, config_entry: ConfigEntry, gw: EnOceanGateway) -> None:
         """Initialize the Eltako gateway connection state sensor."""
         self._attr_gateway = gw
+        self._attr_unique_id = f"{config_entry.unique_id}_{self.entity_description.key}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, gw.unique_id)},
             name=gw.dev_name,
@@ -329,7 +331,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Binary Sensor platform for Eltako."""
     entities: list[EltakoEntity] = []
-    gateway = config_entry.runtime_data.gateway
+    gateway = config_entry.runtime_data
 
     for subentry in config_entry.subentries.values():
         device_model = MODELS[subentry.data[CONF_DEVICE_MODEL]]
@@ -338,6 +340,6 @@ async def async_setup_entry(
             if sensor_class:
                 entities.append(sensor_class(hass, subentry, gateway))
 
-    entities.append(GatewayConnectionState(gateway))
+    entities.append(GatewayConnectionState(config_entry, gateway))
 
     async_add_entities(entities)

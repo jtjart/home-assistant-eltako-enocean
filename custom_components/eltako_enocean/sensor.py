@@ -30,7 +30,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigSubentry
+from homeassistant.config_entries import ConfigEntry, ConfigSubentry
 from homeassistant.const import (
     LIGHT_LUX,
     PERCENTAGE,
@@ -707,9 +707,12 @@ class GatewayLastReceivedMessage(SensorEntity):
         entity_category=EntityCategory.DIAGNOSTIC,
     )
 
-    def __init__(self, gw: EnOceanGateway, device_info: DeviceInfo) -> None:
+    def __init__(
+        self, config_entry: ConfigEntry, gw: EnOceanGateway, device_info: DeviceInfo
+    ) -> None:
         """Initialize the Eltako gateway last message received sensor."""
         self._attr_gateway = gw
+        self._attr_unique_id = f"{config_entry.unique_id}_{self.entity_description.key}"
         self._attr_device_info = device_info
         self._attr_native_value = None
 
@@ -735,9 +738,12 @@ class GatewayReceivedMessagesInActiveSession(SensorEntity):
         state_class=SensorStateClass.TOTAL_INCREASING,
     )
 
-    def __init__(self, gw: EnOceanGateway, device_info: DeviceInfo) -> None:
+    def __init__(
+        self, config_entry: ConfigEntry, gw: EnOceanGateway, device_info: DeviceInfo
+    ) -> None:
         """Initialize the Eltako gateway received message count sensor."""
         self._attr_gateway = gw
+        self._attr_unique_id = f"{config_entry.unique_id}_{self.entity_description.key}"
         self._attr_device_info = device_info
         self._attr_native_value = 0
 
@@ -799,7 +805,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up an Eltako sensor device."""
     entities: list[EltakoEntity] = []
-    gateway = config_entry.runtime_data.gateway
+    gateway = config_entry.runtime_data
 
     for subentry in config_entry.subentries.values():
         device_model = MODELS[subentry.data[CONF_DEVICE_MODEL]]
@@ -814,7 +820,9 @@ async def async_setup_entry(
         manufacturer=MANUFACTURER,
         model=gateway.model,
     )
-    entities.append(GatewayLastReceivedMessage(gateway, device_info))
-    entities.append(GatewayReceivedMessagesInActiveSession(gateway, device_info))
+    entities.append(GatewayLastReceivedMessage(config_entry, gateway, device_info))
+    entities.append(
+        GatewayReceivedMessagesInActiveSession(config_entry, gateway, device_info)
+    )
 
     async_add_entities(entities)

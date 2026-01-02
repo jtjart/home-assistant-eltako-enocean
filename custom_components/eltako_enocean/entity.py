@@ -43,9 +43,7 @@ class EltakoEntity(Entity):
             via_device=(DOMAIN, gw.unique_id),
         )
 
-        _LOGGER.debug(
-            "[%s] Added entity %s (%s)", self.dev_id, self.name, type(self).__name__
-        )
+        _LOGGER.debug("Added entity %s (%s)", self.dev_id, type(self).__name__)
 
     async def async_added_to_hass(self) -> None:
         """Call when entity about to be added to hass. Register callback."""

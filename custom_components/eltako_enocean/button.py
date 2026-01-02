@@ -47,7 +47,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up an Eltako buttons."""
     entities: list[EltakoEntity] = []
-    gateway = config_entry.runtime_data.gateway
+    gateway = config_entry.runtime_data
 
     entities.append(EltakoGatewayReconnectButton(hass, config_entry, gateway))
 

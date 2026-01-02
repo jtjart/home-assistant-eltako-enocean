@@ -48,7 +48,7 @@ class EltakoDimmableLight(EltakoEntity, LightEntity):
     def __init__(self, hass: HomeAssistant, config_entry, gw) -> None:
         """Initialize the Eltako light source."""
         super().__init__(hass, config_entry, gw)
-        self._sender_id: AddressExpression = config_entry.data[CONF_SENDER_ID]
+        self._sender_id = AddressExpression.parse(config_entry.data[CONF_SENDER_ID])
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the light source on or sets a specific dimmer value."""
@@ -116,7 +116,7 @@ class EltakoSwitchableLight(EltakoEntity, LightEntity):
     def __init__(self, hass: HomeAssistant, config_entry, gw) -> None:
         """Initialize the Eltako light source."""
         super().__init__(hass, config_entry, gw)
-        self._sender_id: AddressExpression = config_entry.data[CONF_SENDER_ID]
+        self._sender_id = AddressExpression.parse(config_entry.data[CONF_SENDER_ID])
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the light source on or sets a specific dimmer value."""
@@ -163,7 +163,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Eltako light platform."""
     entities: list[EltakoEntity] = []
-    gateway = config_entry.runtime_data.gateway
+    gateway = config_entry.runtime_data
 
     for subentry in config_entry.subentries.values():
         device_model = MODELS[subentry.data[CONF_DEVICE_MODEL]]

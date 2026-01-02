@@ -37,7 +37,7 @@ class EltakoStandardSwitch(EltakoEntity, SwitchEntity):
     def __init__(self, hass: HomeAssistant, config_entry, gw) -> None:
         """Initialize the Eltako switch device."""
         super().__init__(hass, config_entry, gw)
-        self._sender_id: AddressExpression = config_entry.data[CONF_SENDER_ID]
+        self._sender_id = AddressExpression.parse(config_entry.data[CONF_SENDER_ID])
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn on the switch."""
@@ -83,7 +83,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Eltako switch platform."""
     entities: list[EltakoEntity] = []
-    gateway = config_entry.runtime_data.gateway
+    gateway = config_entry.runtime_data
 
     device_model = MODELS[config_entry.data[CONF_DEVICE_MODEL]]
     for entity_type in device_model.switches:

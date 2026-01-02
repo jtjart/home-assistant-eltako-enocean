@@ -53,7 +53,7 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
     def __init__(self, hass: HomeAssistant, config_entry, gw) -> None:
         """Initialize the Eltako cover device."""
         super().__init__(hass, config_entry, gw)
-        self._sender_id: AddressExpression = config_entry.data[CONF_SENDER_ID]
+        self._sender_id = AddressExpression.parse(config_entry.data[CONF_SENDER_ID])
 
         self._attr_is_opening = False
         self._attr_is_closing = False
@@ -272,7 +272,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Eltako cover platform."""
     entities: list[EltakoEntity] = []
-    gateway = config_entry.runtime_data.gateway
+    gateway = config_entry.runtime_data
 
     for subentry in config_entry.subentries.values():
         device_model = MODELS[subentry.data[CONF_DEVICE_MODEL]]

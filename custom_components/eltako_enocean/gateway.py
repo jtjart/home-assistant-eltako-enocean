@@ -148,14 +148,14 @@ class EnOceanGateway:
         for callback in self.general_subscriptions:
             callback()
 
-        msg_classes = [
+        msg_classes = (
             EltakoWrappedRPS,
             EltakoWrapped1BS,
             EltakoWrapped4BS,
             RPSMessage,
             Regular1BSMessage,
             Regular4BSMessage,
-        ]
+        )
 
         if isinstance(msg, msg_classes) and msg.address in self.address_subscriptions:
             for callback in self.address_subscriptions[msg.address]:

@@ -31,7 +31,7 @@ async def async_setup_entry(
     # Set up gateway
     enocean_gateway = EnOceanGateway(config_entry)
     await enocean_gateway.async_setup()
-    config_entry.runtime_data.gateway = enocean_gateway
+    config_entry.runtime_data = enocean_gateway
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
 
     return True
@@ -45,6 +45,6 @@ async def async_unload_entry(
     _LOGGER.info(
         "Unload %s and all its supported devices!", config_entry.data[CONF_NAME]
     )
-    config_entry.runtime_data.gateway.unload()
+    config_entry.runtime_data.unload()
 
     return True
