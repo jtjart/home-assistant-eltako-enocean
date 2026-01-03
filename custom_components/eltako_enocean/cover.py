@@ -16,7 +16,7 @@ from homeassistant.components.cover import (
     CoverEntityFeature,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import EltakoConfigEntry
 from .const import (
@@ -270,17 +270,17 @@ ENTITY_CLASS_MAP: dict[CoverEntities, EltakoEntity] = {
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: EltakoConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Eltako cover platform."""
-    entities: list[EltakoEntity] = []
     gateway = config_entry.runtime_data
 
-    for subentry in config_entry.subentries.values():
+    # Add devices' entities
+    for subentry_id, subentry in config_entry.subentries.items():
+        subentry_entities: list[EltakoEntity] = []
         device_model = MODELS[subentry.data[CONF_DEVICE_MODEL]]
         for entity_type in device_model.covers:
             sensor_class = ENTITY_CLASS_MAP.get(entity_type)
             if sensor_class:
-                entities.append(sensor_class(hass, subentry, gateway))
-
-    async_add_entities(entities)
+                subentry_entities.append(sensor_class(hass, subentry, gateway))
+        async_add_entities(subentry_entities, config_subentry_id=subentry_id)

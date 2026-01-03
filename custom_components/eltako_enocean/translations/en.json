@@ -6,8 +6,8 @@
         "title": "Set up the Eltako gateway",
         "data": {
           "name": "Name",
-          "gateway_model": "Gateway type",
-          "serial_path": "USB gateway path",
+          "device_model": "Gateway type",
+          "serial_port": "USB gateway path",
           "id": "Gateway ID",
           "auto_reconnect": "Automatic reconnection",
           "message_delay": "Message delay (ms)",
@@ -22,24 +22,14 @@
     },
     "abort": {}
   },
-  "config_subentries" : {
-    "device": {
-      "title": "Eltako device",
+  "config_subentries": {
+    "actuator": {
+      "initiate_flow": {
+        "reconfigure": "TBD",
+        "user": "Add Actuator"
+      },
       "step": {
         "user": {
-          "title": "Select which device type to add",
-          "menu_options": {
-            "sensor": "Sensor",
-            "actuator": "Actuator"
-          }
-        },
-        "sensor": {
-          "title": "Select the sensor to add",
-          "menu_options": {
-            "TBD": ""
-          }
-        },
-        "actuator": {
           "title": "Select the actuator to add",
           "menu_options": {
             "cover": "Cover",
@@ -87,6 +77,17 @@
         "invalid_id": "[%key:component::eltako_enocean::config::error:::invalid_id%]"
       },
       "abort": {}
+    },
+    "sensor": {
+      "initiate_flow": {
+        "reconfigure": "TBD",
+        "user": "Add Sensor"
+      },
+      "step": {
+        "user": {
+          "title": "Select the sensor to add"
+        }
+      }
     }
   },
   "options": {},

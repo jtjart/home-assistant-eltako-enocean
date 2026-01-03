@@ -10,7 +10,7 @@ from eltakobus.util import AddressExpression
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import EltakoConfigEntry
 from .const import CONF_DEVICE_MODEL, CONF_SENDER_ID
@@ -79,16 +79,17 @@ ENTITY_CLASS_MAP: dict[SwitchEntities, EltakoEntity] = {
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: EltakoConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Eltako switch platform."""
-    entities: list[EltakoEntity] = []
     gateway = config_entry.runtime_data
 
-    device_model = MODELS[config_entry.data[CONF_DEVICE_MODEL]]
-    for entity_type in device_model.switches:
-        sensor_class = ENTITY_CLASS_MAP.get(entity_type)
-        if sensor_class:
-            entities.append(sensor_class(hass, config_entry, gateway))
-
-    async_add_entities(entities)
+    # Add devices' entities
+    for subentry_id, subentry in config_entry.subentries.items():
+        subentry_entities: list[EltakoEntity] = []
+        device_model = MODELS[subentry.data[CONF_DEVICE_MODEL]]
+        for entity_type in device_model.switches:
+            sensor_class = ENTITY_CLASS_MAP.get(entity_type)
+            if sensor_class:
+                subentry_entities.append(sensor_class(hass, subentry, gateway))
+        async_add_entities(subentry_entities, config_subentry_id=subentry_id)

@@ -45,7 +45,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util import dt as dt_util
 
 from . import EltakoConfigEntry
@@ -801,20 +801,23 @@ ENTITY_CLASS_MAP: dict[SensorEntities, EltakoSensor] = {
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: EltakoConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up an Eltako sensor device."""
-    entities: list[EltakoEntity] = []
     gateway = config_entry.runtime_data
 
-    for subentry in config_entry.subentries.values():
+    # Add gateway's entities
+    entities: list[SensorEntity] = []
+    entities.append(GatewayLastReceivedMessage(config_entry, gateway))
+    entities.append(GatewayReceivedMessagesInActiveSession(config_entry, gateway))
+    async_add_entities(entities)
+
+    # Add devices' entities
+    for subentry_id, subentry in config_entry.subentries.items():
+        subentry_entities: list[EltakoEntity] = []
         device_model = MODELS[subentry.data[CONF_DEVICE_MODEL]]
         for entity_type in device_model.sensors:
             sensor_class = ENTITY_CLASS_MAP.get(entity_type)
             if sensor_class:
-                entities.append(sensor_class(hass, subentry, gateway))
-
-    entities.append(GatewayLastReceivedMessage(config_entry, gateway))
-    entities.append(GatewayReceivedMessagesInActiveSession(config_entry, gateway))
-
-    async_add_entities(entities)
+                subentry_entities.append(sensor_class(hass, subentry, gateway))
+        async_add_entities(subentry_entities, config_subentry_id=subentry_id)

@@ -12,11 +12,10 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import EltakoConfigEntry
 from .const import DOMAIN
-from .entity import EltakoEntity
 from .gateway import EnOceanGateway
 
 _LOGGER = logging.getLogger(__name__)
@@ -53,12 +52,12 @@ class EltakoGatewayReconnectButton(ButtonEntity):
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: EltakoConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up an Eltako buttons."""
-    entities: list[EltakoEntity] = []
     gateway = config_entry.runtime_data
 
+    # Add gateway's entities
+    entities: list[ButtonEntity] = []
     entities.append(EltakoGatewayReconnectButton(config_entry, gateway))
-
     async_add_entities(entities)
