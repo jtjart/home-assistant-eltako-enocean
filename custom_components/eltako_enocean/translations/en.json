@@ -23,7 +23,7 @@
     "abort": {}
   },
   "config_subentries" : {
-    "devices": {
+    "device": {
       "title": "Eltako device",
       "step": {
         "user": {

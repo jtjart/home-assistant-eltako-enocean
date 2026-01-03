@@ -16,10 +16,12 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_ID, CONF_NAME
 from homeassistant.core import callback
-import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.schema_config_entry_flow import SchemaFlowError
+from homeassistant.helpers.selector import AreaSelector
 
 from .const import (
+    CONF_AREA,
     CONF_DEVICE_MODEL,
     CONF_FAST_STATUS_CHANGE,
     CONF_GATEWAY_AUTO_RECONNECT,
@@ -121,10 +123,10 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
         cls, config_entry: ConfigEntry
     ) -> dict[str, type[ConfigSubentryFlow]]:
         """Return subentries supported by this integration."""
-        return {"devices": DevicesSubentryFlowHandler}
+        return {"device": DeviceSubentryFlowHandler}
 
 
-class DevicesSubentryFlowHandler(ConfigSubentryFlow):
+class DeviceSubentryFlowHandler(ConfigSubentryFlow):
     """Handle subentry flow for adding and modifying a device."""
 
     async def async_step_user(
@@ -177,6 +179,7 @@ class DevicesSubentryFlowHandler(ConfigSubentryFlow):
                 vol.Required(CONF_ID, default="00-00-00-01"): str,
                 vol.Required(CONF_DEVICE_MODEL): vol.In(device_options),
                 vol.Required(CONF_SENDER_ID, default="00-00-B0-01"): str,
+                vol.Optional(CONF_AREA): AreaSelector(),
                 vol.Optional(CONF_TIME_CLOSES): vol.All(
                     vol.Coerce(float), vol.Range(min=1, max=255)
                 ),
@@ -217,6 +220,7 @@ class DevicesSubentryFlowHandler(ConfigSubentryFlow):
                 vol.Required(CONF_ID, default="00-00-00-01"): str,
                 vol.Required(CONF_DEVICE_MODEL): vol.In(device_options),
                 vol.Required(CONF_SENDER_ID, default="00-00-B0-01"): str,
+                vol.Optional(CONF_AREA): AreaSelector(),
             }
         )
 
@@ -248,6 +252,7 @@ class DevicesSubentryFlowHandler(ConfigSubentryFlow):
                 vol.Required(CONF_ID, default="00-00-00-01"): str,
                 vol.Required(CONF_DEVICE_MODEL): vol.In(device_options),
                 vol.Required(CONF_SENDER_ID, default="00-00-B0-01"): str,
+                vol.Optional(CONF_AREA): AreaSelector(),
             }
         )
 
