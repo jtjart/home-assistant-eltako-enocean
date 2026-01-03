@@ -2,6 +2,7 @@
 
 from collections.abc import Callable
 import logging
+from typing import Any
 
 from eltakobus.eep import WrongOrgError
 from eltakobus.message import (
@@ -43,7 +44,7 @@ class EnOceanGateway:
     creating devices if needed, and dispatching messages to platforms.
     """
 
-    address_subscriptions: dict[AddressExpression, list[MessageCallback]] = {}
+    address_subscriptions: dict[Any, list[MessageCallback]] = {}
     general_subscriptions: list[Callable] = []
     connection_state_subscriptons: list[GwConnectionCallback] = []
 
@@ -71,9 +72,9 @@ class EnOceanGateway:
         self, address: AddressExpression, callback: MessageCallback
     ):
         """Register a callback for a specific address."""
-        self.address_subscriptions.setdefault(address, []).append(callback)
+        self.address_subscriptions.setdefault(address[0], []).append(callback)
         # Return an "unsubscribe" function
-        return lambda: self.address_subscriptions[address].remove(callback)
+        return lambda: self.address_subscriptions[address[0]].remove(callback)
 
     def register_message_received_callback(self, callback: Callable):
         """Register a callback for any message."""

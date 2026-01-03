@@ -134,49 +134,69 @@ COVER_MODELS: dict[str, ModelDefinition] = {
 }
 
 LIGHT_MODELS: dict[str, ModelDefinition] = {
-    "FSR14_2x_l": ModelDefinition(name="FSR14-2x", lights=LightEntities.SWITCHABLE),
-    "FSR14_4x_l": ModelDefinition(name="FSR14-4x", lights=LightEntities.SWITCHABLE),
+    "FSR14_2x_l": ModelDefinition(name="FSR14-2x", lights=[LightEntities.SWITCHABLE]),
+    "FSR14_4x_l": ModelDefinition(name="FSR14-4x", lights=[LightEntities.SWITCHABLE]),
     "FSR14M_2x_l": ModelDefinition(
         name="FSR14M-2x",
-        lights=LightEntities.SWITCHABLE,
+        lights=[LightEntities.SWITCHABLE],
         sensors=SensorEntities.A5_12_01_POWER,
     ),
-    "FSR14SSR_l": ModelDefinition(name="FSR14SSR", lights=LightEntities.SWITCHABLE),
+    "FSR14SSR_l": ModelDefinition(name="FSR14SSR", lights=[LightEntities.SWITCHABLE]),
     "FSR71_2x_230V_l": ModelDefinition(
-        name="FSR71-2x-230V", lights=LightEntities.SWITCHABLE
+        name="FSR71-2x-230V", lights=[LightEntities.SWITCHABLE]
     ),
     "FSR71NP_230V_l": ModelDefinition(
-        name="FSR71NP-230V", lights=LightEntities.SWITCHABLE
+        name="FSR71NP-230V", lights=[LightEntities.SWITCHABLE]
     ),
     "FSR71NP_2x_230V_l": ModelDefinition(
-        name="FSR71NP-2x-230V", lights=LightEntities.SWITCHABLE
+        name="FSR71NP-2x-230V", lights=[LightEntities.SWITCHABLE]
     ),
     "FSR71NP_4x_230V_l": ModelDefinition(
-        name="FSR71NP-4x-230V", lights=LightEntities.SWITCHABLE
+        name="FSR71NP-4x-230V", lights=[LightEntities.SWITCHABLE]
     ),
-    "FUD14": ModelDefinition(name="FUD14", lights=LightEntities.DIMMABLE),
-    "FUD14_800W": ModelDefinition(name="FUD14-800W", lights=LightEntities.DIMMABLE),
-    "FUD61NP_230V": ModelDefinition(name="FUD61NP-230V", lights=LightEntities.DIMMABLE),
+    "FUD14": ModelDefinition(name="FUD14", lights=[LightEntities.DIMMABLE]),
+    "FUD14_800W": ModelDefinition(name="FUD14-800W", lights=[LightEntities.DIMMABLE]),
+    "FUD61NP_230V": ModelDefinition(
+        name="FUD61NP-230V", lights=[LightEntities.DIMMABLE]
+    ),
     "FUD61NPN_230V": ModelDefinition(
-        name="FUD61NPN-230V", lights=LightEntities.DIMMABLE
+        name="FUD61NPN-230V", lights=[LightEntities.DIMMABLE]
     ),
-    "FUD71_230V": ModelDefinition(name="FUD71-230V", lights=LightEntities.DIMMABLE),
+    "FUD71_230V": ModelDefinition(name="FUD71-230V", lights=[LightEntities.DIMMABLE]),
     "FUD71_1200W_230V": ModelDefinition(
-        name="FUD71/1200W-230V", lights=LightEntities.DIMMABLE
+        name="FUD71/1200W-230V", lights=[LightEntities.DIMMABLE]
     ),
-    "FSG14_1_10V": ModelDefinition(name="FSG14/1-10V", lights=LightEntities.DIMMABLE),
-    "FSG71_1_10V": ModelDefinition(name="FSG71/1-10V", lights=LightEntities.DIMMABLE),
-    "FDG14": ModelDefinition(name="FDG14", lights=LightEntities.DIMMABLE),
-    "FDG62_230V": ModelDefinition(name="FDG62-230V", lights=LightEntities.DIMMABLE),
-    "FDG71L_230V": ModelDefinition(name="FDG71L-230V", lights=LightEntities.DIMMABLE),
-    "FKLD61": ModelDefinition(name="FKLD61", lights=LightEntities.DIMMABLE),
-    "FLD61": ModelDefinition(name="FLD61", lights=LightEntities.DIMMABLE),
-    "FRGBW14": ModelDefinition(name="FRGBW14", lights=LightEntities.DIMMABLE),
-    "FRGBW71L": ModelDefinition(name="FRGBW71L", lights=LightEntities.DIMMABLE),
-    "FSUD-230V": ModelDefinition(name="FSUD-230V", lights=LightEntities.DIMMABLE),
+    "FSG14_1_10V": ModelDefinition(name="FSG14/1-10V", lights=[LightEntities.DIMMABLE]),
+    "FSG71_1_10V": ModelDefinition(name="FSG71/1-10V", lights=[LightEntities.DIMMABLE]),
+    "FDG14": ModelDefinition(name="FDG14", lights=[LightEntities.DIMMABLE]),
+    "FDG62_230V": ModelDefinition(name="FDG62-230V", lights=[LightEntities.DIMMABLE]),
+    "FDG71L_230V": ModelDefinition(name="FDG71L-230V", lights=[LightEntities.DIMMABLE]),
+    "FKLD61": ModelDefinition(name="FKLD61", lights=[LightEntities.DIMMABLE]),
+    "FLD61": ModelDefinition(name="FLD61", lights=[LightEntities.DIMMABLE]),
+    "FRGBW14": ModelDefinition(name="FRGBW14", lights=[LightEntities.DIMMABLE]),
+    "FRGBW71L": ModelDefinition(name="FRGBW71L", lights=[LightEntities.DIMMABLE]),
+    "FSUD-230V": ModelDefinition(name="FSUD-230V", lights=[LightEntities.DIMMABLE]),
 }
 
-SENSOR_MODELS: dict[str, ModelDefinition] = {}
+SENSOR_MODELS: dict[str, ModelDefinition] = {
+    "FTKE": ModelDefinition(
+        name="FTKE", binary_sensors=[BinarySensorEntities.F6_10_00_WINDOW]
+    ),
+    "FFTE": ModelDefinition(
+        name="FFTE", binary_sensors=[BinarySensorEntities.F6_10_00_WINDOW]
+    ),
+    "FWS61": ModelDefinition(
+        name="FWS61",
+        sensors=[
+            SensorEntities.A5_13_01_WEATHER_STATION_ILLUMINANCE_DAWN,
+            SensorEntities.A5_13_01_WEATHER_STATION_TEMPERATURE,
+            SensorEntities.A5_13_01_WEATHER_STATION_WIND_SPEED,
+            SensorEntities.A5_13_02_WEATHER_STATION_ILLUMINANCE_CENTRAL,
+            SensorEntities.A5_13_02_WEATHER_STATION_ILLUMINANCE_EAST,
+            SensorEntities.A5_13_02_WEATHER_STATION_ILLUMINANCE_WEST,
+        ],
+    ),
+}
 
 SWITCH_MODELS: dict[str, ModelDefinition] = {
     "FSR14_2x": ModelDefinition(name="FSR14-2x", switches=[SwitchEntities.STANDARD]),

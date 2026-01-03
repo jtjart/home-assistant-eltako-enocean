@@ -29,7 +29,6 @@ class EltakoEntity(Entity):
         self._attr_gateway = gw
 
         self._attr_dev_id = AddressExpression.parse(config_entry.data[CONF_ID])
-        self.listen_to_address = self.dev_id[0]  # TODO maybe delete
         self._attr_unique_id = (
             f"{config_entry.unique_id}_{self.entity_description.key}"
             if self.entity_description.key

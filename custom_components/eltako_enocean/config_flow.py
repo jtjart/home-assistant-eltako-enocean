@@ -32,7 +32,13 @@ from .const import (
     DOMAIN,
     ID_REGEX,
 )
-from .device import COVER_MODELS, GATEWAY_MODELS, LIGHT_MODELS, SWITCH_MODELS
+from .device import (
+    COVER_MODELS,
+    GATEWAY_MODELS,
+    LIGHT_MODELS,
+    SENSOR_MODELS,
+    SWITCH_MODELS,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -245,9 +251,33 @@ class ActuatorSubentryFlowHandler(ConfigSubentryFlow):
 class SensorSubentryFlowHandler(ConfigSubentryFlow):
     """Handle subentry flow for adding and modifying a sensor."""
 
-    # TODO
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> SubentryFlowResult:
         """Add a sensor device."""
-        return self.async_abort(reason="not_implemented yet")
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            try:
+                _validate_enocean_id(user_input, CONF_ID)
+                return self.async_create_entry(
+                    title=user_input[CONF_NAME],
+                    data=user_input,
+                    unique_id=str(user_input[CONF_ID]).replace(" ", "-").upper(),
+                )
+            except SchemaFlowError as e:
+                errors[e.args[0]] = e.args[1]
+
+        device_options = {key: model.name for key, model in SENSOR_MODELS.items()}
+
+        data_schema = vol.Schema(
+            {
+                vol.Required(CONF_NAME): cv.string,
+                vol.Required(CONF_ID, default="00-00-00-01"): str,
+                vol.Required(CONF_DEVICE_MODEL): vol.In(device_options),
+            }
+        )
+
+        return self.async_show_form(
+            step_id="light", data_schema=data_schema, errors=errors
+        )
