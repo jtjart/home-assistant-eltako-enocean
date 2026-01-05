@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import logging
 from typing import Any
 
-from eltakobus.eep import A5_38_08, M5_38_08, CentralCommandSwitching
+from eltakobus.eep import A5_38_08, F6_02_01, M5_38_08, CentralCommandSwitching
 from eltakobus.message import ESP2Message
 from eltakobus.util import AddressExpression
 
@@ -71,8 +71,43 @@ class EltakoStandardSwitch(EltakoEntity, SwitchEntity):
         self.schedule_update_ha_state()
 
 
+class EltakoDumbSwitch(EltakoStandardSwitch):
+    """Representation of a dumb Eltako switch.
+
+    This is for devices, which do not support the controller telegrams (e.g. FMS14).
+    Therefore pressing a button is simulated.
+    """
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Turn the switch on."""
+        address, _ = self._sender_id
+
+        msg = F6_02_01(3, 1, 0, 0).encode_message(address)  # push button
+        await self.async_send_message(msg)
+        msg = F6_02_01(3, 0, 0, 0).encode_message(address)  # release button
+        await self.async_send_message(msg)
+
+        if self.gateway.fast_status_change:
+            self._attr_is_on = True
+            self.schedule_update_ha_state()
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn the switch off."""
+        address, _ = self._sender_id
+
+        msg = F6_02_01(2, 1, 0, 0).encode_message(address)  # push button
+        await self.async_send_message(msg)
+        msg = F6_02_01(2, 0, 0, 0).encode_message(address)  # release button
+        await self.async_send_message(msg)
+
+        if self.gateway.fast_status_change:
+            self._attr_is_on = False
+            self.schedule_update_ha_state()
+
+
 ENTITY_CLASS_MAP: dict[SwitchEntities, EltakoEntity] = {
     SwitchEntities.STANDARD: EltakoStandardSwitch,
+    SwitchEntities.DUMB: EltakoDumbSwitch,
 }
 
 

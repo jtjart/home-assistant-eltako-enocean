@@ -17,12 +17,12 @@ from eltakobus.message import (
 )
 from eltakobus.serial import RS485SerialInterfaceV2
 from eltakobus.util import AddressExpression
-from esp2_gateway_adapter.esp3_serial_com import ESP3SerialCommunicator
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_ID, CONF_NAME
+from homeassistant.const import CONF_NAME
 
 from .const import (
+    CONF_BASE_ID,
     CONF_DEVICE_MODEL,
     CONF_FAST_STATUS_CHANGE,
     CONF_GATEWAY_AUTO_RECONNECT,
@@ -57,7 +57,7 @@ class EnOceanGateway:
 
         self._device_model = GATEWAY_MODELS[config_entry.data[CONF_DEVICE_MODEL]]
         self._serial_port = str(config_entry.data[CONF_SERIAL_PORT])
-        self._base_id = AddressExpression.parse(config_entry.data[CONF_ID])
+        self._base_id = AddressExpression.parse(config_entry.data[CONF_BASE_ID])
         self._auto_reconnect_enabled = bool(
             config_entry.data[CONF_GATEWAY_AUTO_RECONNECT]
         )
@@ -103,6 +103,10 @@ class EnOceanGateway:
                 auto_reconnect=self._auto_reconnect_enabled,
             )
         else:
+            from esp2_gateway_adapter.esp3_serial_com import (  # noqa: PLC0415
+                ESP3SerialCommunicator,
+            )
+
             self._bus = ESP3SerialCommunicator(
                 filename=self._serial_port,
                 callback=self._callback_receive_message_from_serial_bus,

@@ -20,6 +20,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.schema_config_entry_flow import SchemaFlowError
 
 from .const import (
+    CONF_BASE_ID,
     CONF_DEVICE_MODEL,
     CONF_FAST_STATUS_CHANGE,
     CONF_GATEWAY_AUTO_RECONNECT,
@@ -92,7 +93,7 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(port.serial_number)
             self._abort_if_unique_id_configured()
             try:
-                _validate_enocean_id(user_input, CONF_ID)
+                _validate_enocean_id(user_input, CONF_BASE_ID)
                 _validate_gateway_path(user_input)
                 return self.async_create_entry(
                     title=user_input[CONF_NAME], data=user_input
@@ -105,15 +106,14 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
         data_schema = vol.Schema(
             {
                 vol.Required(CONF_NAME, default="Eltako Gateway"): str,
+                vol.Required(CONF_BASE_ID, default="00-00-B0-00"): str,
                 vol.Required(CONF_DEVICE_MODEL): vol.In(gateway_options),
                 vol.Required(CONF_SERIAL_PORT): vol.In(serial_ports),
-                # TODO should have 00-00 for BUS and FF for transmitter
-                vol.Required(CONF_ID, default="00-00-B0-00"): str,
                 vol.Required(CONF_GATEWAY_AUTO_RECONNECT, default=True): bool,
+                vol.Required(CONF_FAST_STATUS_CHANGE, default=True): bool,
                 vol.Required(CONF_GATEWAY_MESSAGE_DELAY, default=0.01): vol.All(
                     vol.Coerce(float), vol.Range(min=0.0)
                 ),
-                vol.Required(CONF_FAST_STATUS_CHANGE, default=False): bool,
             }
         )
 
@@ -279,5 +279,5 @@ class SensorSubentryFlowHandler(ConfigSubentryFlow):
         )
 
         return self.async_show_form(
-            step_id="light", data_schema=data_schema, errors=errors
+            step_id="user", data_schema=data_schema, errors=errors
         )
