@@ -9,6 +9,6 @@
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/jtjart/home-assistant-eltako/issues",
   "loggers": ["eltako14bus", "enocean"],
-  "requirements": ["eltako14bus==0.0.75", "enocean>=0.60.1", "esp2-gateway-adapter==0.2.15"],
+  "requirements": ["eltako14bus==0.0.75", "enocean>=0.60.1", "esp2-gateway-adapter==0.2.21"],
   "version": "0.0.3"
 }

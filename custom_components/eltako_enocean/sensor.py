@@ -30,7 +30,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry, ConfigSubentry
+from homeassistant.config_entries import ConfigSubentry
 from homeassistant.const import (
     LIGHT_LUX,
     PERCENTAGE,
@@ -57,11 +57,11 @@ from .gateway import EnOceanGateway
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class EltakoSensorEntityDescription(SensorEntityDescription):
     """Describes Eltako sensor entity."""
 
-    has_entity_name = True
+    has_entity_name: bool = True
 
 
 class EltakoSensor(EltakoEntity, SensorEntity):
@@ -121,7 +121,7 @@ class EltakoPowerSensor_A5_12_01(EltakoSensor):
             return
         if not decoded.data_type:
             return  # commulative
-        if msg.data[3] == 0x8F:
+        if msg.data[3] == 0x8F:  # pyright: ignore[reportAttributeAccessIssue]
             return  # transmitting serial number of meter
 
         self._attr_native_value = round(decoded.meter_reading / 10**decoded.divisor, 2)
@@ -368,7 +368,8 @@ class EltakoWeatherStationIlluminanceWestSensor(EltakoSensor):
             return
         if decoded.identifier != 0x02:  # check if A5-13-02
             return
-        self._attr_native_value = decoded.sun_west * 1000.0
+        sun_west = decoded.sun_west
+        self._attr_native_value = sun_west * 1000.0 if sun_west else sun_west
         self.schedule_update_ha_state()
 
 
@@ -391,7 +392,8 @@ class EltakoWeatherStationIlluminanceCentralSensor(EltakoSensor):
             return
         if decoded.identifier != 0x02:  # check if A5-13-02
             return
-        self._attr_native_value = decoded.sun_south * 1000.0
+        sun_south = decoded.sun_south
+        self._attr_native_value = sun_south * 1000.0 if sun_south else sun_south
         self.schedule_update_ha_state()
 
 
@@ -414,7 +416,8 @@ class EltakoWeatherStationIlluminanceEastSensor(EltakoSensor):
             return
         if decoded.identifier != 0x02:  # check if A5-13-02
             return
-        self._attr_native_value = decoded.sun_east * 1000.0
+        sun_east = decoded.sun_east
+        self._attr_native_value = sun_east * 1000.0 if sun_east else sun_east
         self.schedule_update_ha_state()
 
 
@@ -707,13 +710,11 @@ class GatewayLastReceivedMessage(SensorEntity):
         entity_category=EntityCategory.DIAGNOSTIC,
     )
 
-    def __init__(self, config_entry: ConfigEntry, gw: EnOceanGateway) -> None:
+    def __init__(self, gw: EnOceanGateway) -> None:
         """Initialize the Eltako gateway last message received sensor."""
         self._attr_gateway = gw
-        self._attr_unique_id = f"{config_entry.unique_id}_{self.entity_description.key}"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, config_entry.unique_id)}
-        )
+        self._attr_unique_id = f"{gw.unique_id}_{self.entity_description.key}"
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, gw.unique_id)})
         self._attr_native_value = None
 
     async def async_added_to_hass(self) -> None:
@@ -738,13 +739,11 @@ class GatewayReceivedMessagesInActiveSession(SensorEntity):
         state_class=SensorStateClass.TOTAL_INCREASING,
     )
 
-    def __init__(self, config_entry: ConfigEntry, gw: EnOceanGateway) -> None:
+    def __init__(self, gw: EnOceanGateway) -> None:
         """Initialize the Eltako gateway received message count sensor."""
         self._attr_gateway = gw
-        self._attr_unique_id = f"{config_entry.unique_id}_{self.entity_description.key}"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, config_entry.unique_id)}
-        )
+        self._attr_unique_id = f"{gw.unique_id}_{self.entity_description.key}"
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, gw.unique_id)})
         self._attr_native_value = 0
 
     async def async_added_to_hass(self) -> None:
@@ -755,12 +754,14 @@ class GatewayReceivedMessagesInActiveSession(SensorEntity):
 
     def count_up(self) -> None:
         """Increase the current value by one."""
-        self.native_value += 1
+        self.native_value = (
+            self.native_value + 1 if isinstance(self.native_value, int) else 0
+        )
         self.schedule_update_ha_state()
 
 
 # TODO maybe improve type hint of EltakoSensor like callback
-ENTITY_CLASS_MAP: dict[SensorEntities, EltakoSensor] = {
+ENTITY_CLASS_MAP: dict[SensorEntities, type[EltakoEntity]] = {
     SensorEntities.A5_04_01_TEMPERATURE: EltakoTemperatureSensor_A5_04_01,
     SensorEntities.A5_04_01_HUMIDITY: EltakoHumiditySensor_A5_04_01,
     SensorEntities.A5_04_02_TEMPERATURE: EltakoTemperatureSensor_A5_04_02,
@@ -808,8 +809,8 @@ async def async_setup_entry(
 
     # Add gateway's entities
     entities: list[SensorEntity] = []
-    entities.append(GatewayLastReceivedMessage(config_entry, gateway))
-    entities.append(GatewayReceivedMessagesInActiveSession(config_entry, gateway))
+    entities.append(GatewayLastReceivedMessage(gateway))
+    entities.append(GatewayReceivedMessagesInActiveSession(gateway))
     async_add_entities(entities)
 
     # Add devices' entities

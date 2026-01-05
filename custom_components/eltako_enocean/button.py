@@ -21,11 +21,11 @@ from .gateway import EnOceanGateway
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True)
+@dataclass(frozen=True)
 class EltakoButtonEntityDescription(ButtonEntityDescription):
     """Describes Eltako button entity."""
 
-    has_entity_name = True
+    has_entity_name: bool = True
 
 
 class EltakoGatewayReconnectButton(ButtonEntity):

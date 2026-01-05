@@ -23,6 +23,7 @@ from homeassistant.components.light import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.typing import UndefinedType
 from homeassistant.util.scaling import scale_ranged_value_to_int_range
 
 from . import EltakoConfigEntry
@@ -33,13 +34,13 @@ from .entity import EltakoEntity
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True)
+@dataclass(frozen=True)
 class EltakoLightEntityDescription(LightEntityDescription):
     """Describes Eltako light entity."""
 
-    key = ""
-    has_entity_name = True
-    name = None
+    key: str = ""
+    has_entity_name: bool = True
+    name: str | UndefinedType | None = None
 
 
 class EltakoDimmableLight(EltakoEntity, LightEntity):
@@ -197,7 +198,7 @@ class EltakoDumbLight(EltakoSwitchableLight):
             self.schedule_update_ha_state()
 
 
-ENTITY_CLASS_MAP: dict[LightEntities, EltakoEntity] = {
+ENTITY_CLASS_MAP: dict[LightEntities, type[EltakoEntity]] = {
     LightEntities.DIMMABLE: EltakoDimmableLight,
     LightEntities.DUMB: EltakoDumbLight,
     LightEntities.SWITCHABLE: EltakoSwitchableLight,

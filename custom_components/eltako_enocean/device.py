@@ -90,7 +90,6 @@ class ModelDefinition:
     """Representation of an Eltako device model."""
 
     name: str
-    # TODO maybe only one list of entities
     binary_sensors: list[BinarySensorEntities] = field(default_factory=list)
     buttons: list[ButtonEntities] = field(default_factory=list)
     covers: list[CoverEntities] = field(default_factory=list)
@@ -153,7 +152,7 @@ LIGHT_MODELS: dict[str, ModelDefinition] = {
     "FSR14M_2x_l": ModelDefinition(
         "FSR14M-2x",
         lights=[LightEntities.SWITCHABLE],
-        sensors=SensorEntities.A5_12_01_POWER,
+        sensors=[SensorEntities.A5_12_01_POWER],
     ),
     "FSR14SSR_l": ModelDefinition("FSR14SSR", lights=[LightEntities.SWITCHABLE]),
     "FSR71_2x_230V_l": ModelDefinition(

@@ -17,6 +17,7 @@ from homeassistant.components.cover import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.typing import UndefinedType
 
 from . import EltakoConfigEntry
 from .const import (
@@ -35,13 +36,13 @@ DIRECTION_UP = "UP"
 DIRECTION_DOWN = "DOWN"
 
 
-@dataclass(kw_only=True)
+@dataclass(frozen=True)
 class EltakoCoverEntityDescription(CoverEntityDescription):
     """Describes Eltako switch entity."""
 
-    key = ""
-    has_entity_name = True
-    name = None
+    key: str = ""
+    has_entity_name: bool = True
+    name: str | UndefinedType | None = None
 
 
 class EltakoStandardCover(EltakoEntity, CoverEntity):
@@ -60,19 +61,25 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
         self._attr_is_closed = None  # means undefined state
         self._attr_current_cover_position = None
         self._attr_current_cover_tilt_position = None
-        self._time_closes = int(config_entry.data.get(CONF_TIME_CLOSES))
-        self._time_opens = int(config_entry.data.get(CONF_TIME_OPENS))
-        self._time_tilts = config_entry.data.get(CONF_TIME_TILTS)
+        self._time_closes = None
+        self._time_opens = None
+        self._time_tilts = None
 
         self._attr_supported_features = (
             CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE | CoverEntityFeature.STOP
         )
 
-        if self._time_tilts is not None:
-            self._attr_supported_features |= CoverEntityFeature.SET_TILT_POSITION
-
-        if self._time_closes is not None and self._time_opens is not None:
+        if (
+            CONF_TIME_CLOSES in config_entry.data
+            and CONF_TIME_OPENS in config_entry.data
+        ):
             self._attr_supported_features |= CoverEntityFeature.SET_POSITION
+            self._time_closes = int(config_entry.data[CONF_TIME_CLOSES])
+            self._time_opens = int(config_entry.data[CONF_TIME_OPENS])
+
+        if CONF_TIME_TILTS in config_entry.data:
+            self._attr_supported_features |= CoverEntityFeature.SET_TILT_POSITION
+            self._time_tilts = config_entry.data[CONF_TIME_TILTS]
 
     async def async_open_cover(self, **kwargs: Any) -> None:
         """Open the cover."""
@@ -231,7 +238,7 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
                     + int(time_in_seconds / self._time_opens * 100.0),
                     100,
                 )
-                if self._time_tilts is not None:
+                if self._time_tilts and self._attr_current_cover_tilt_position:
                     self._attr_current_cover_tilt_position = min(
                         self._attr_current_cover_tilt_position
                         + int(time_in_seconds / self._time_tilts * 100.0),
@@ -248,7 +255,7 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
                     - int(time_in_seconds / self._time_closes * 100.0),
                     0,
                 )
-                if self._time_tilts is not None:
+                if self._time_tilts and self._attr_current_cover_tilt_position:
                     self._attr_current_cover_tilt_position = max(
                         self._attr_current_cover_tilt_position
                         - int(time_in_seconds / self._time_tilts * 100.0),
@@ -262,7 +269,7 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
         self.schedule_update_ha_state()
 
 
-ENTITY_CLASS_MAP: dict[CoverEntities, EltakoEntity] = {
+ENTITY_CLASS_MAP: dict[CoverEntities, type[EltakoEntity]] = {
     CoverEntities.STANDARD: EltakoStandardCover,
 }
 

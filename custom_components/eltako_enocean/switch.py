@@ -11,6 +11,7 @@ from eltakobus.util import AddressExpression
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.typing import UndefinedType
 
 from . import EltakoConfigEntry
 from .const import CONF_DEVICE_MODEL, CONF_SENDER_ID
@@ -20,13 +21,13 @@ from .entity import EltakoEntity
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True)
+@dataclass(frozen=True)
 class EltakoSwitchEntityDescription(SwitchEntityDescription):
     """Describes Eltako switch entity."""
 
-    key = ""
-    has_entity_name = True
-    name = None
+    key: str = ""
+    has_entity_name: bool = True
+    name: str | UndefinedType | None = None
 
 
 class EltakoStandardSwitch(EltakoEntity, SwitchEntity):
@@ -105,7 +106,7 @@ class EltakoDumbSwitch(EltakoStandardSwitch):
             self.schedule_update_ha_state()
 
 
-ENTITY_CLASS_MAP: dict[SwitchEntities, EltakoEntity] = {
+ENTITY_CLASS_MAP: dict[SwitchEntities, type[EltakoEntity]] = {
     SwitchEntities.STANDARD: EltakoStandardSwitch,
     SwitchEntities.DUMB: EltakoDumbSwitch,
 }

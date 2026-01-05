@@ -17,6 +17,7 @@ from eltakobus.message import (
 )
 from eltakobus.serial import RS485SerialInterfaceV2
 from eltakobus.util import AddressExpression
+from esp2_gateway_adapter.esp3_serial_com import ESP3SerialCommunicator
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME
@@ -48,7 +49,7 @@ class EnOceanGateway:
     general_subscriptions: list[Callable] = []
     connection_state_subscriptons: list[GwConnectionCallback] = []
 
-    def __init__(self, config_entry: ConfigEntry = None) -> None:
+    def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize the Eltako gateway."""
         self._attr_dev_name = config_entry.data[CONF_NAME]
 
@@ -64,7 +65,7 @@ class EnOceanGateway:
         self._message_delay = float(config_entry.data[CONF_GATEWAY_MESSAGE_DELAY])
         self._fast_status_change = bool(config_entry.data[CONF_FAST_STATUS_CHANGE])
         self._baud_rate = self._device_model.baud_rate
-        self._unique_id = config_entry.unique_id
+        self._unique_id = config_entry.unique_id or config_entry.entry_id
 
         self._init_bus()
 
@@ -103,10 +104,6 @@ class EnOceanGateway:
                 auto_reconnect=self._auto_reconnect_enabled,
             )
         else:
-            from esp2_gateway_adapter.esp3_serial_com import (  # noqa: PLC0415
-                ESP3SerialCommunicator,
-            )
-
             self._bus = ESP3SerialCommunicator(
                 filename=self._serial_port,
                 callback=self._callback_receive_message_from_serial_bus,
@@ -143,9 +140,11 @@ class EnOceanGateway:
         else:
             _LOGGER.warning("Serial port %s is not available", self.serial_port)
 
-    def _callback_receive_message_from_serial_bus(self, msg):
+    def _callback_receive_message_from_serial_bus(self, msg: ESP2Message | None = None):
         """Handle incoming EnOcean messages."""
 
+        if not msg:
+            return
         if isinstance(msg, EltakoPoll):
             return
 

@@ -23,7 +23,6 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
@@ -38,11 +37,11 @@ from .gateway import EnOceanGateway
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class EltakoBinarySensorEntityDescription(BinarySensorEntityDescription):
     """Describes Eltako binary sensor entity."""
 
-    has_entity_name = True
+    has_entity_name: bool = True
 
 
 class EltakoOccupancySensor(EltakoEntity, BinarySensorEntity):
@@ -107,7 +106,7 @@ class EltakoContactSensor_D5_00_01(EltakoEntity, BinarySensorEntity):
         decoded = D5_00_01.decode_message(msg)
         if decoded.learn_button == 0:
             return
-        self._attr_is_on = decoded.contact
+        self._attr_is_on = bool(decoded.contact)
         self.schedule_update_ha_state()
 
 
@@ -283,10 +282,10 @@ class GatewayConnectionState(BinarySensorEntity):
         entity_category=EntityCategory.DIAGNOSTIC,
     )
 
-    def __init__(self, config_entry: ConfigEntry, gw: EnOceanGateway) -> None:
+    def __init__(self, gw: EnOceanGateway) -> None:
         """Initialize the Eltako gateway connection state sensor."""
         self._attr_gateway = gw
-        self._attr_unique_id = f"{config_entry.unique_id}_{self.entity_description.key}"
+        self._attr_unique_id = f"{gw.unique_id}_{self.entity_description.key}"
         self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, gw.unique_id)})
 
     async def async_added_to_hass(self) -> None:
@@ -302,7 +301,7 @@ class GatewayConnectionState(BinarySensorEntity):
         self.schedule_update_ha_state()
 
 
-ENTITY_CLASS_MAP: dict[BinarySensorEntities, EltakoEntity] = {
+ENTITY_CLASS_MAP: dict[BinarySensorEntities, type[EltakoEntity]] = {
     BinarySensorEntities.A5_07_01_OCCUPANCY: EltakoOccupancySensor_A5_07_01,
     BinarySensorEntities.A5_08_01_OCCUPANCY: EltakoOccupancySensor_A5_08_01,
     BinarySensorEntities.A5_13_01_WEATHER_STATION_RAIN: EltakoWeatherStationRainSensor,
@@ -329,7 +328,7 @@ async def async_setup_entry(
 
     # Add gateway's entities
     entities: list[BinarySensorEntity] = []
-    entities.append(GatewayConnectionState(config_entry, gateway))
+    entities.append(GatewayConnectionState(gateway))
     async_add_entities(entities)
 
     # Add devices' entities
