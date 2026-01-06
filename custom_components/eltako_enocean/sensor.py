@@ -44,6 +44,7 @@ from homeassistant.const import (
     UnitOfVolume,
     UnitOfVolumeFlowRate,
 )
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util import dt as dt_util
@@ -781,7 +782,9 @@ ENTITY_CLASS_MAP: dict[SensorEntities, type[EltakoEntity]] = {
 
 
 async def async_setup_entry(
-    config_entry: EltakoConfigEntry, async_add_entities: AddConfigEntryEntitiesCallback
+    hass: HomeAssistant,
+    config_entry: EltakoConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up an Eltako sensor device."""
     gateway = config_entry.runtime_data

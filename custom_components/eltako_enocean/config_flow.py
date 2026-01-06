@@ -10,6 +10,7 @@ import serial.tools.list_ports
 import voluptuous as vol
 
 from homeassistant.config_entries import (
+    SOURCE_RECONFIGURE,
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
@@ -95,7 +96,6 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input=None) -> ConfigFlowResult:
         """Configure an Eltako Gateway."""
         errors: dict[str, str] = {}
-        reconfigure_entry = self._get_reconfigure_entry()
 
         ports = await self.hass.async_add_executor_job(serial.tools.list_ports.comports)
         serial_ports = {p.device: f"{p.description} ({p.device})" for p in ports}
@@ -109,32 +109,51 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
             try:
                 _validate_enocean_id(user_input, CONF_ID)
                 _validate_gateway_path(user_input)
-                if reconfigure_entry:
+            except SchemaFlowError as e:
+                errors[e.args[0]] = e.args[1]
+            else:
+                if self.source == SOURCE_RECONFIGURE:
                     return self.async_update_reload_and_abort(
-                        reconfigure_entry, data_updates=user_input
+                        self._get_reconfigure_entry(), data_updates=user_input
                     )
                 return self.async_create_entry(
                     title=user_input[CONF_NAME], data=user_input
                 )
-            except SchemaFlowError as e:
-                errors[e.args[0]] = e.args[1]
 
         data_schema = vol.Schema(
             {
-                vol.Required(CONF_NAME, default="Eltako Gateway"): str,
-                vol.Required(CONF_ID, default="00-00-B0-00"): str,
+                vol.Required(CONF_NAME): str,
+                vol.Required(CONF_ID): str,
                 vol.Required(CONF_MODEL): vol.In(_get_model_options(GATEWAY_MODELS)),
                 vol.Required(CONF_SERIAL_PORT): vol.In(serial_ports),
-                vol.Required(CONF_GATEWAY_AUTO_RECONNECT, default=True): bool,
-                vol.Required(CONF_FAST_STATUS_CHANGE, default=True): bool,
-                vol.Required(CONF_GATEWAY_MESSAGE_DELAY, default=0.01): vol.All(
+                vol.Required(CONF_GATEWAY_AUTO_RECONNECT): bool,
+                vol.Required(CONF_FAST_STATUS_CHANGE): bool,
+                vol.Required(CONF_GATEWAY_MESSAGE_DELAY): vol.All(
                     vol.Coerce(float), vol.Range(min=0.0)
                 ),
             }
         )
+        suggested_values = {
+            CONF_NAME: "Eltako Gateway",
+            CONF_ID: "00-00-B0-00",
+            CONF_GATEWAY_AUTO_RECONNECT: True,
+            CONF_FAST_STATUS_CHANGE: True,
+            CONF_GATEWAY_MESSAGE_DELAY: 0.01,
+        }
+
+        if user_input:
+            data_schema = self.add_suggested_values_to_schema(data_schema, user_input)
+        elif self.source == SOURCE_RECONFIGURE:
+            data_schema = self.add_suggested_values_to_schema(
+                data_schema, self._get_reconfigure_entry().data
+            )
+        else:
+            data_schema = self.add_suggested_values_to_schema(
+                data_schema, suggested_values
+            )
 
         return self.async_show_form(
-            step_id="user", data_schema=data_schema, errors=errors
+            step_id="user", data_schema=data_schema, errors=errors, last_step=True
         )
 
     async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None):
@@ -177,7 +196,7 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
             step_name="cover",
             models=COVER_MODELS,
             extra_schema={
-                vol.Required(CONF_SENDER_ID, default="00-00-B0-01"): str,
+                vol.Required(CONF_SENDER_ID): str,
                 vol.Optional(CONF_TIME_CLOSES): vol.All(
                     vol.Coerce(float), vol.Range(min=1, max=255)
                 ),
@@ -197,7 +216,7 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
         device_type_config = DeviceTypeConfig(
             step_name="switch",
             models=SWITCH_MODELS,
-            extra_schema={vol.Required(CONF_SENDER_ID, default="00-00-B0-01"): str},
+            extra_schema={vol.Required(CONF_SENDER_ID): str},
             extra_validate=_validate_sender,
         )
         return await self._async_step_device_type(device_type_config, user_input)
@@ -207,7 +226,7 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
         device_type_config = DeviceTypeConfig(
             step_name="light",
             models=LIGHT_MODELS,
-            extra_schema={vol.Required(CONF_SENDER_ID, default="00-00-B0-01"): str},
+            extra_schema={vol.Required(CONF_SENDER_ID): str},
             extra_validate=_validate_sender,
         )
         return await self._async_step_device_type(device_type_config, user_input)
@@ -245,13 +264,22 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
         data_schema = vol.Schema(
             {
                 vol.Required(CONF_NAME): cv.string,
-                vol.Required(CONF_ID, default="00-00-00-01"): str,
+                vol.Required(CONF_ID): str,
                 vol.Required(CONF_MODEL): vol.In(model_options),
             }
         )
+        data_schema.extend(device_type_config.extra_schema)
+        suggested_values = {
+            CONF_ID: "00-00-00-01",
+            CONF_SENDER_ID: "00-00-B0-01",
+        }
+        data_schema = self.add_suggested_values_to_schema(data_schema, suggested_values)
 
         return self.async_show_form(
-            step_id=device_type_config.step_name, data_schema=data_schema, errors=errors
+            step_id=device_type_config.step_name,
+            data_schema=data_schema,
+            errors=errors,
+            last_step=True,
         )
 
     def _error_entries_match(self, user_input):

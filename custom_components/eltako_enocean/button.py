@@ -9,6 +9,7 @@ from homeassistant.components.button import (
     ButtonEntityDescription,
 )
 from homeassistant.const import EntityCategory
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -48,7 +49,9 @@ class EltakoGatewayReconnectButton(ButtonEntity):
 
 
 async def async_setup_entry(
-    config_entry: EltakoConfigEntry, async_add_entities: AddConfigEntryEntitiesCallback
+    hass: HomeAssistant,
+    config_entry: EltakoConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up an Eltako buttons."""
     gateway = config_entry.runtime_data

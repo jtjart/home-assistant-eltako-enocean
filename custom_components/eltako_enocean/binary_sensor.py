@@ -23,6 +23,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntityDescription,
 )
 from homeassistant.const import CONF_MODEL, EntityCategory
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -317,7 +318,9 @@ ENTITY_CLASS_MAP: dict[BinarySensorEntities, type[EltakoEntity]] = {
 
 
 async def async_setup_entry(
-    config_entry: EltakoConfigEntry, async_add_entities: AddConfigEntryEntitiesCallback
+    hass: HomeAssistant,
+    config_entry: EltakoConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Binary Sensor platform for Eltako."""
     gateway = config_entry.runtime_data

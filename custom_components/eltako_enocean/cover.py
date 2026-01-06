@@ -16,6 +16,7 @@ from homeassistant.components.cover import (
     CoverEntityFeature,
 )
 from homeassistant.const import CONF_MODEL
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import UndefinedType
 
@@ -268,7 +269,9 @@ ENTITY_CLASS_MAP: dict[CoverEntities, type[EltakoEntity]] = {
 
 
 async def async_setup_entry(
-    config_entry: EltakoConfigEntry, async_add_entities: AddConfigEntryEntitiesCallback
+    hass: HomeAssistant,
+    config_entry: EltakoConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Eltako cover platform."""
     gateway = config_entry.runtime_data

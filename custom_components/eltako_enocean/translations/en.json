@@ -6,7 +6,7 @@
         "title": "Set up the Eltako gateway",
         "data": {
           "name": "Name",
-          "device_model": "Gateway type",
+          "model": "Gateway type",
           "serial_port": "USB gateway path",
           "id": "Gateway base ID",
           "auto_reconnect": "Automatic reconnection",
@@ -23,7 +23,9 @@
       "invalid_id": "The ID must be in the format XX-XX-XX-XX where X is a hexadecimal digit (0-9, A-F)",
       "no_serial_ports": "No serial ports found. Please connect your gateway and try again."
     },
-    "abort": {}
+    "abort": {
+      "reconfigure_successful": "Gateway has been reconfigured successfully."
+    }
   },
   "config_subentries": {
     "device": {
@@ -46,7 +48,7 @@
           "data": {
             "name": "Name",
             "id": "Device ID",
-            "device_model": "Device model",
+            "model": "Device model",
             "sender_id": "Sender ID",
             "device_class": "Device class",
             "time_closes": "Time to close (seconds)",
@@ -59,7 +61,7 @@
           "data": {
             "name": "Name",
             "id": "Device ID",
-            "device_model": "Device model",
+            "model": "Device model",
             "sender_id": "Sender ID"
           }
         },
@@ -68,7 +70,7 @@
           "data": {
             "name": "Name",
             "id": "Device ID",
-            "device_model": "Device model",
+            "model": "Device model",
             "sender_id": "Sender ID"
           }
         },
@@ -77,7 +79,7 @@
           "data": {
             "name": "Name",
             "id": "Device ID",
-            "device_model": "Device model"
+            "model": "Device model"
           }
         }
       },
