@@ -1,4 +1,4 @@
-"""Support for Eltako buttons."""
+"""Support for Eltako Enocean buttons."""
 
 from dataclasses import dataclass
 import logging
@@ -8,9 +8,7 @@ from homeassistant.components.button import (
     ButtonEntity,
     ButtonEntityDescription,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -38,10 +36,10 @@ class EltakoGatewayReconnectButton(ButtonEntity):
         entity_category=EntityCategory.CONFIG,
     )
 
-    def __init__(self, config_entry: ConfigEntry, gw: EnOceanGateway) -> None:
+    def __init__(self, gw: EnOceanGateway) -> None:
         """Initialize the Eltako gateway connection state sensor."""
         self._attr_gateway = gw
-        self._attr_unique_id = f"{config_entry.unique_id}_{self.entity_description.key}"
+        self._attr_unique_id = f"{gw.unique_id}_{self.entity_description.key}"
         self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, gw.unique_id)})
 
     async def async_press(self) -> None:
@@ -50,14 +48,12 @@ class EltakoGatewayReconnectButton(ButtonEntity):
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
-    config_entry: EltakoConfigEntry,
-    async_add_entities: AddConfigEntryEntitiesCallback,
+    config_entry: EltakoConfigEntry, async_add_entities: AddConfigEntryEntitiesCallback
 ) -> None:
     """Set up an Eltako buttons."""
     gateway = config_entry.runtime_data
 
     # Add gateway's entities
     entities: list[ButtonEntity] = []
-    entities.append(EltakoGatewayReconnectButton(config_entry, gateway))
+    entities.append(EltakoGatewayReconnectButton(gateway))
     async_add_entities(entities)

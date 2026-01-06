@@ -1,4 +1,4 @@
-"""Representation of an Eltako gateway."""
+"""Representation of an Eltako Enocean gateway."""
 
 from collections.abc import Callable
 import logging
@@ -20,11 +20,9 @@ from eltakobus.util import AddressExpression
 from esp2_gateway_adapter.esp3_serial_com import ESP3SerialCommunicator
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_NAME
+from homeassistant.const import CONF_ID, CONF_MODEL, CONF_NAME
 
 from .const import (
-    CONF_BASE_ID,
-    CONF_DEVICE_MODEL,
     CONF_FAST_STATUS_CHANGE,
     CONF_GATEWAY_AUTO_RECONNECT,
     CONF_GATEWAY_MESSAGE_DELAY,
@@ -56,24 +54,25 @@ class EnOceanGateway:
         _LOGGER.info("Initializes Gateway Device '%s'", self._attr_dev_name)
         _LOGGER.debug(config_entry.data)
 
-        self._device_model = GATEWAY_MODELS[config_entry.data[CONF_DEVICE_MODEL]]
+        self._device_model = GATEWAY_MODELS[config_entry.data[CONF_MODEL]]
         self._serial_port = str(config_entry.data[CONF_SERIAL_PORT])
-        self._base_id = AddressExpression.parse(config_entry.data[CONF_BASE_ID])
+        self._base_id = AddressExpression.parse(config_entry.data[CONF_ID])
         self._auto_reconnect_enabled = bool(
             config_entry.data[CONF_GATEWAY_AUTO_RECONNECT]
         )
         self._message_delay = float(config_entry.data[CONF_GATEWAY_MESSAGE_DELAY])
         self._fast_status_change = bool(config_entry.data[CONF_FAST_STATUS_CHANGE])
         self._baud_rate = self._device_model.baud_rate
-        self._unique_id = config_entry.unique_id or config_entry.entry_id
+        self._unique_id = config_entry.entry_id
 
         self._init_bus()
 
-    def register_address_callback(
+    async def async_register_address_callback(
         self, address: AddressExpression, callback: MessageCallback
     ):
         """Register a callback for a specific address."""
         self.address_subscriptions.setdefault(address[0], []).append(callback)
+        await self.async_send_message_to_serial_bus(EltakoPoll(address))
         # Return an "unsubscribe" function
         return lambda: self.address_subscriptions[address[0]].remove(callback)
 
@@ -138,7 +137,7 @@ class EnOceanGateway:
 
                 await self._bus.send(msg)
         else:
-            _LOGGER.warning("Serial port %s is not available", self.serial_port)
+            _LOGGER.warning("Serial port %s is not available", self._serial_port)
 
     def _callback_receive_message_from_serial_bus(self, msg: ESP2Message | None = None):
         """Handle incoming EnOcean messages."""
@@ -172,21 +171,6 @@ class EnOceanGateway:
     def unique_id(self) -> str:
         """Return the unique id of the gateway."""
         return self._unique_id
-
-    @property
-    def serial_port(self) -> str:
-        """Return the serial port of the gateway."""
-        return self._serial_port
-
-    @property
-    def dev_name(self) -> str:
-        """Return the device name of the gateway."""
-        return self._attr_dev_name
-
-    @property
-    def base_id(self) -> AddressExpression:
-        """Return the base id of the gateway."""
-        return self._base_id
 
     @property
     def model(self) -> str:

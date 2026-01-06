@@ -1,5 +1,7 @@
-"""Config flows for the Eltako integration."""
+"""Config flows for the Eltako Enocean integration."""
 
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 import logging
 from typing import Any
 
@@ -14,14 +16,12 @@ from homeassistant.config_entries import (
     ConfigSubentryFlow,
     SubentryFlowResult,
 )
-from homeassistant.const import CONF_ID, CONF_NAME
+from homeassistant.const import CONF_ID, CONF_MODEL, CONF_NAME
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.schema_config_entry_flow import SchemaFlowError
 
 from .const import (
-    CONF_BASE_ID,
-    CONF_DEVICE_MODEL,
     CONF_FAST_STATUS_CHANGE,
     CONF_GATEWAY_AUTO_RECONNECT,
     CONF_GATEWAY_MESSAGE_DELAY,
@@ -39,6 +39,7 @@ from .device import (
     LIGHT_MODELS,
     SENSOR_MODELS,
     SWITCH_MODELS,
+    ModelDefinition,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -51,19 +52,28 @@ def _validate_enocean_id(user_input, key):
         raise SchemaFlowError(key, "invalid_id") from e
 
 
-def _validate_cover_times(user_input):
+def _validate_sender(user_input):
+    _validate_enocean_id(user_input, CONF_SENDER_ID)
+
+
+def _validate_cover(user_input):
+    _validate_enocean_id(user_input, CONF_SENDER_ID)
+
     has_closes = CONF_TIME_CLOSES in user_input
     has_opens = CONF_TIME_OPENS in user_input
-
     if has_closes != has_opens:
         raise SchemaFlowError(CONF_TIME_OPENS, "invalid_cover_time")
+
+
+def _validate_none(_):
+    pass
 
 
 def _validate_gateway_path(user_input: dict[str, Any]):
     """Return True if the provided path points to a valid serial port, False otherwise."""
 
     serial_path: str = user_input[CONF_SERIAL_PORT]
-    gw_model = GATEWAY_MODELS[user_input[CONF_DEVICE_MODEL]]
+    gw_model = GATEWAY_MODELS[user_input[CONF_MODEL]]
 
     try:
         serial.serial_for_url(serial_path, gw_model.baud_rate, timeout=0.1)
@@ -72,7 +82,10 @@ def _validate_gateway_path(user_input: dict[str, Any]):
         raise SchemaFlowError(CONF_SERIAL_PORT, "invalid_gateway_path") from exception
 
 
-# TODO add options for message delay, auto reconnect, serial path
+def _get_model_options(models: Mapping[str, ModelDefinition]):
+    return {key: model.name for key, model in models.items()}
+
+
 class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
     """Handle the Eltako config flows."""
 
@@ -82,6 +95,7 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input=None) -> ConfigFlowResult:
         """Configure an Eltako Gateway."""
         errors: dict[str, str] = {}
+        reconfigure_entry = self._get_reconfigure_entry()
 
         ports = await self.hass.async_add_executor_job(serial.tools.list_ports.comports)
         serial_ports = {p.device: f"{p.description} ({p.device})" for p in ports}
@@ -89,25 +103,27 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
             errors[CONF_SERIAL_PORT] = "no_serial_ports"
 
         if user_input is not None:
-            port = next(p for p in ports if p.device == user_input[CONF_SERIAL_PORT])
-            await self.async_set_unique_id(port.serial_number)
-            self._abort_if_unique_id_configured()
+            self._async_abort_entries_match(
+                {CONF_SERIAL_PORT: user_input[CONF_SERIAL_PORT]}
+            )
             try:
-                _validate_enocean_id(user_input, CONF_BASE_ID)
+                _validate_enocean_id(user_input, CONF_ID)
                 _validate_gateway_path(user_input)
+                if reconfigure_entry:
+                    return self.async_update_reload_and_abort(
+                        reconfigure_entry, data_updates=user_input
+                    )
                 return self.async_create_entry(
                     title=user_input[CONF_NAME], data=user_input
                 )
             except SchemaFlowError as e:
                 errors[e.args[0]] = e.args[1]
 
-        gateway_options = {key: model.name for key, model in GATEWAY_MODELS.items()}
-
         data_schema = vol.Schema(
             {
                 vol.Required(CONF_NAME, default="Eltako Gateway"): str,
-                vol.Required(CONF_BASE_ID, default="00-00-B0-00"): str,
-                vol.Required(CONF_DEVICE_MODEL): vol.In(gateway_options),
+                vol.Required(CONF_ID, default="00-00-B0-00"): str,
+                vol.Required(CONF_MODEL): vol.In(_get_model_options(GATEWAY_MODELS)),
                 vol.Required(CONF_SERIAL_PORT): vol.In(serial_ports),
                 vol.Required(CONF_GATEWAY_AUTO_RECONNECT, default=True): bool,
                 vol.Required(CONF_FAST_STATUS_CHANGE, default=True): bool,
@@ -121,53 +137,46 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=data_schema, errors=errors
         )
 
+    async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None):
+        """Reconfigure an Eltako Gateway."""
+        return await self.async_step_user(user_input)
+
     @classmethod
     @callback
     def async_get_supported_subentry_types(
         cls, config_entry: ConfigEntry
     ) -> dict[str, type[ConfigSubentryFlow]]:
         """Return subentries supported by this integration."""
-        return {
-            "actuator": ActuatorSubentryFlowHandler,
-            "sensor": SensorSubentryFlowHandler,
-        }
+        return {"device": DeviceSubentryFlowHandler}
 
 
-class ActuatorSubentryFlowHandler(ConfigSubentryFlow):
-    """Handle subentry flow for adding and modifying an actuator."""
+@dataclass(frozen=True)
+class DeviceTypeConfig:
+    """A class to configure the differet Eltako device types, that can be set up."""
+
+    step_name: str
+    models: Mapping[str, ModelDefinition]
+    extra_schema: dict
+    extra_validate: Callable[[dict], None]
+
+
+class DeviceSubentryFlowHandler(ConfigSubentryFlow):
+    """Handle subentry flow for adding and modifying an device."""
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> SubentryFlowResult:
-        """Select the actuator type to add."""
+        """Select the devoce type to add."""
         return self.async_show_menu(
-            step_id="user", menu_options=["cover", "switch", "light"]
+            step_id="user", menu_options=["cover", "switch", "light", "sensor"]
         )
 
     async def async_step_cover(self, user_input=None) -> SubentryFlowResult:
         """Add a cover device."""
-        errors: dict[str, str] = {}
-
-        if user_input is not None:
-            try:
-                _validate_enocean_id(user_input, CONF_ID)
-                _validate_enocean_id(user_input, CONF_SENDER_ID)
-                _validate_cover_times(user_input)
-                return self.async_create_entry(
-                    title=user_input[CONF_NAME],
-                    data=user_input,
-                    unique_id=str(user_input[CONF_ID]).replace(" ", "-").upper(),
-                )
-            except SchemaFlowError as e:
-                errors[e.args[0]] = e.args[1]
-
-        device_options = {key: model.name for key, model in COVER_MODELS.items()}
-
-        data_schema = vol.Schema(
-            {
-                vol.Required(CONF_NAME): cv.string,
-                vol.Required(CONF_ID, default="00-00-00-01"): str,
-                vol.Required(CONF_DEVICE_MODEL): vol.In(device_options),
+        device_type_config = DeviceTypeConfig(
+            step_name="cover",
+            models=COVER_MODELS,
+            extra_schema={
                 vol.Required(CONF_SENDER_ID, default="00-00-B0-01"): str,
                 vol.Optional(CONF_TIME_CLOSES): vol.All(
                     vol.Coerce(float), vol.Range(min=1, max=255)
@@ -178,106 +187,74 @@ class ActuatorSubentryFlowHandler(ConfigSubentryFlow):
                 vol.Optional(CONF_TIME_TILTS): vol.All(
                     vol.Coerce(float), vol.Range(min=1, max=255)
                 ),
-            }
+            },
+            extra_validate=_validate_cover,
         )
-
-        return self.async_show_form(
-            step_id="cover", data_schema=data_schema, errors=errors
-        )
+        return await self._async_step_device_type(device_type_config, user_input)
 
     async def async_step_switch(self, user_input=None) -> SubentryFlowResult:
         """Add a switch device."""
-        errors: dict[str, str] = {}
-
-        if user_input is not None:
-            try:
-                _validate_enocean_id(user_input, CONF_ID)
-                _validate_enocean_id(user_input, CONF_SENDER_ID)
-                return self.async_create_entry(
-                    title=user_input[CONF_NAME],
-                    data=user_input,
-                    unique_id=str(user_input[CONF_ID]).replace(" ", "-").upper(),
-                )
-            except SchemaFlowError as e:
-                errors[e.args[0]] = e.args[1]
-
-        device_options = {key: model.name for key, model in SWITCH_MODELS.items()}
-
-        data_schema = vol.Schema(
-            {
-                vol.Required(CONF_NAME): cv.string,
-                vol.Required(CONF_ID, default="00-00-00-01"): str,
-                vol.Required(CONF_DEVICE_MODEL): vol.In(device_options),
-                vol.Required(CONF_SENDER_ID, default="00-00-B0-01"): str,
-            }
+        device_type_config = DeviceTypeConfig(
+            step_name="switch",
+            models=SWITCH_MODELS,
+            extra_schema={vol.Required(CONF_SENDER_ID, default="00-00-B0-01"): str},
+            extra_validate=_validate_sender,
         )
-
-        return self.async_show_form(
-            step_id="switch", data_schema=data_schema, errors=errors
-        )
+        return await self._async_step_device_type(device_type_config, user_input)
 
     async def async_step_light(self, user_input=None) -> SubentryFlowResult:
         """Add a light device."""
-        errors: dict[str, str] = {}
-
-        if user_input is not None:
-            try:
-                _validate_enocean_id(user_input, CONF_ID)
-                _validate_enocean_id(user_input, CONF_SENDER_ID)
-                return self.async_create_entry(
-                    title=user_input[CONF_NAME],
-                    data=user_input,
-                    unique_id=str(user_input[CONF_ID]).replace(" ", "-").upper(),
-                )
-            except SchemaFlowError as e:
-                errors[e.args[0]] = e.args[1]
-
-        device_options = {key: model.name for key, model in LIGHT_MODELS.items()}
-
-        data_schema = vol.Schema(
-            {
-                vol.Required(CONF_NAME): cv.string,
-                vol.Required(CONF_ID, default="00-00-00-01"): str,
-                vol.Required(CONF_DEVICE_MODEL): vol.In(device_options),
-                vol.Required(CONF_SENDER_ID, default="00-00-B0-01"): str,
-            }
+        device_type_config = DeviceTypeConfig(
+            step_name="light",
+            models=LIGHT_MODELS,
+            extra_schema={vol.Required(CONF_SENDER_ID, default="00-00-B0-01"): str},
+            extra_validate=_validate_sender,
         )
+        return await self._async_step_device_type(device_type_config, user_input)
 
-        return self.async_show_form(
-            step_id="light", data_schema=data_schema, errors=errors
-        )
-
-
-class SensorSubentryFlowHandler(ConfigSubentryFlow):
-    """Handle subentry flow for adding and modifying a sensor."""
-
-    async def async_step_user(
+    async def async_step_sensor(
         self, user_input: dict[str, Any] | None = None
     ) -> SubentryFlowResult:
         """Add a sensor device."""
+        device_type_config = DeviceTypeConfig(
+            step_name="sensor",
+            models=SENSOR_MODELS,
+            extra_schema={},
+            extra_validate=_validate_none,
+        )
+        return await self._async_step_device_type(device_type_config, user_input)
+
+    async def _async_step_device_type(
+        self, device_type_config: DeviceTypeConfig, user_input
+    ):
         errors: dict[str, str] = {}
 
         if user_input is not None:
             try:
+                self._error_entries_match(user_input)
                 _validate_enocean_id(user_input, CONF_ID)
-                return self.async_create_entry(
-                    title=user_input[CONF_NAME],
-                    data=user_input,
-                    unique_id=str(user_input[CONF_ID]).replace(" ", "-").upper(),
-                )
+                device_type_config.extra_validate(user_input)
             except SchemaFlowError as e:
                 errors[e.args[0]] = e.args[1]
+            else:
+                return self.async_create_entry(
+                    title=user_input[CONF_NAME], data=user_input
+                )
 
-        device_options = {key: model.name for key, model in SENSOR_MODELS.items()}
-
+        model_options = _get_model_options(device_type_config.models)
         data_schema = vol.Schema(
             {
                 vol.Required(CONF_NAME): cv.string,
                 vol.Required(CONF_ID, default="00-00-00-01"): str,
-                vol.Required(CONF_DEVICE_MODEL): vol.In(device_options),
+                vol.Required(CONF_MODEL): vol.In(model_options),
             }
         )
 
         return self.async_show_form(
-            step_id="user", data_schema=data_schema, errors=errors
+            step_id=device_type_config.step_name, data_schema=data_schema, errors=errors
         )
+
+    def _error_entries_match(self, user_input):
+        for subentry in self._get_entry().subentries.values():
+            if str(user_input[CONF_ID]).lower() == str(subentry.data[CONF_ID]).lower():
+                raise SchemaFlowError(CONF_ID, "already_configured")

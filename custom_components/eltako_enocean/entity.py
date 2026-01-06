@@ -1,4 +1,4 @@
-"""Representation of an Eltako entity."""
+"""Representation of an Eltako Enocean entity."""
 
 import logging
 
@@ -7,7 +7,6 @@ from eltakobus.util import AddressExpression
 
 from homeassistant.config_entries import ConfigSubentry
 from homeassistant.const import CONF_ID
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo, Entity
 
 from .const import DOMAIN
@@ -21,21 +20,18 @@ class EltakoEntity(Entity):
 
     _attr_should_poll = False
 
-    def __init__(
-        self, hass: HomeAssistant, config_entry: ConfigSubentry, gw: EnOceanGateway
-    ) -> None:
+    def __init__(self, config_entry: ConfigSubentry, gw: EnOceanGateway) -> None:
         """Initialize the device."""
-        self.hass = hass
         self._attr_gateway = gw
 
         self._attr_dev_id = AddressExpression.parse(config_entry.data[CONF_ID])
         self._attr_unique_id = (
-            f"{config_entry.unique_id}_{self.entity_description.key}"
+            f"{config_entry.subentry_id}_{self.entity_description.key}"
             if self.entity_description.key
-            else config_entry.unique_id
+            else config_entry.subentry_id
         )
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, f"{gw.unique_id}_{config_entry.unique_id}")}
+            identifiers={(DOMAIN, f"{gw.unique_id}_{config_entry.subentry_id}")}
         )
 
         _LOGGER.debug("Added entity %s (%s)", self.dev_id, type(self).__name__)
@@ -43,7 +39,9 @@ class EltakoEntity(Entity):
     async def async_added_to_hass(self) -> None:
         """Call when entity about to be added to hass. Register callback."""
         self.async_on_remove(
-            self.gateway.register_address_callback(self.dev_id, self.value_changed)
+            await self.gateway.async_register_address_callback(
+                self.dev_id, self.value_changed
+            )
         )
 
     @property

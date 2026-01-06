@@ -1,4 +1,4 @@
-"""Constants for the Eltako integration."""
+"""Constants for the Eltako Enocean integration."""
 
 from typing import Final
 
@@ -7,8 +7,6 @@ from homeassistant.const import Platform
 DOMAIN: Final = "eltako_enocean"
 MANUFACTURER: Final = "Eltako"
 
-CONF_BASE_ID: Final = "base_id"
-CONF_DEVICE_MODEL: Final = "device_model"
 CONF_FAST_STATUS_CHANGE: Final = "fast_status_change"
 CONF_GATEWAY_AUTO_RECONNECT: Final = "auto_reconnect"
 CONF_GATEWAY_MESSAGE_DELAY: Final = "message_delay"

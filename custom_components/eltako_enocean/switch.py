@@ -1,4 +1,4 @@
-"""Support for Eltako switches."""
+"""Support for Eltako Enocean switches."""
 
 from dataclasses import dataclass
 import logging
@@ -9,12 +9,12 @@ from eltakobus.message import ESP2Message
 from eltakobus.util import AddressExpression
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
-from homeassistant.core import HomeAssistant
+from homeassistant.const import CONF_MODEL
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import UndefinedType
 
 from . import EltakoConfigEntry
-from .const import CONF_DEVICE_MODEL, CONF_SENDER_ID
+from .const import CONF_SENDER_ID
 from .device import MODELS, SwitchEntities
 from .entity import EltakoEntity
 
@@ -35,9 +35,9 @@ class EltakoStandardSwitch(EltakoEntity, SwitchEntity):
 
     entity_description = EltakoSwitchEntityDescription()
 
-    def __init__(self, hass: HomeAssistant, config_entry, gw) -> None:
+    def __init__(self, config_entry, gw) -> None:
         """Initialize the Eltako switch device."""
-        super().__init__(hass, config_entry, gw)
+        super().__init__(config_entry, gw)
         self._sender_id = AddressExpression.parse(config_entry.data[CONF_SENDER_ID])
 
     async def async_turn_on(self, **kwargs: Any) -> None:
@@ -113,9 +113,7 @@ ENTITY_CLASS_MAP: dict[SwitchEntities, type[EltakoEntity]] = {
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
-    config_entry: EltakoConfigEntry,
-    async_add_entities: AddConfigEntryEntitiesCallback,
+    config_entry: EltakoConfigEntry, async_add_entities: AddConfigEntryEntitiesCallback
 ) -> None:
     """Set up the Eltako switch platform."""
     gateway = config_entry.runtime_data
@@ -123,9 +121,9 @@ async def async_setup_entry(
     # Add devices' entities
     for subentry_id, subentry in config_entry.subentries.items():
         subentry_entities: list[EltakoEntity] = []
-        device_model = MODELS[subentry.data[CONF_DEVICE_MODEL]]
+        device_model = MODELS[subentry.data[CONF_MODEL]]
         for entity_type in device_model.switches:
             sensor_class = ENTITY_CLASS_MAP.get(entity_type)
             if sensor_class:
-                subentry_entities.append(sensor_class(hass, subentry, gateway))
+                subentry_entities.append(sensor_class(subentry, gateway))
         async_add_entities(subentry_entities, config_subentry_id=subentry_id)

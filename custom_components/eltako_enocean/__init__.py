@@ -1,13 +1,13 @@
-"""The Eltako integration."""
+"""The Eltako Enocean integration."""
 
 import logging
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_NAME
+from homeassistant.const import CONF_MODEL, CONF_NAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 
-from .const import CONF_DEVICE_MODEL, DOMAIN, MANUFACTURER, PLATFORMS
+from .const import DOMAIN, MANUFACTURER, PLATFORMS
 from .device import MODELS
 from .gateway import EnOceanGateway
 
@@ -33,16 +33,18 @@ async def async_setup_entry(
         config_entry_id=config_entry.entry_id,
         identifiers={(DOMAIN, enocean_gateway.unique_id)},
         manufacturer=MANUFACTURER,
-        model=MODELS[config_entry.data[CONF_DEVICE_MODEL]].name,
+        model=MODELS[config_entry.data[CONF_MODEL]].name,
         name=config_entry.data[CONF_NAME],
     )
     for subentry in config_entry.subentries.values():
         device_registry.async_get_or_create(
             config_entry_id=config_entry.entry_id,
             config_subentry_id=subentry.subentry_id,
-            identifiers={(DOMAIN, f"{enocean_gateway.unique_id}_{subentry.unique_id}")},
+            identifiers={
+                (DOMAIN, f"{enocean_gateway.unique_id}_{subentry.subentry_id}")
+            },
             manufacturer=MANUFACTURER,
-            model=MODELS[subentry.data[CONF_DEVICE_MODEL]].name,
+            model=MODELS[subentry.data[CONF_MODEL]].name,
             name=subentry.data[CONF_NAME],
             via_device=(DOMAIN, enocean_gateway.unique_id),
         )

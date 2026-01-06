@@ -1,4 +1,4 @@
-"""Support for Eltako covers."""
+"""Support for Eltako Enocean covers."""
 
 import asyncio
 from dataclasses import dataclass
@@ -15,18 +15,12 @@ from homeassistant.components.cover import (
     CoverEntityDescription,
     CoverEntityFeature,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.const import CONF_MODEL
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import UndefinedType
 
 from . import EltakoConfigEntry
-from .const import (
-    CONF_DEVICE_MODEL,
-    CONF_SENDER_ID,
-    CONF_TIME_CLOSES,
-    CONF_TIME_OPENS,
-    CONF_TIME_TILTS,
-)
+from .const import CONF_SENDER_ID, CONF_TIME_CLOSES, CONF_TIME_OPENS, CONF_TIME_TILTS
 from .device import MODELS, CoverEntities
 from .entity import EltakoEntity
 
@@ -50,10 +44,9 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
 
     entity_description = EltakoCoverEntityDescription()
 
-    # TODO major rework here
-    def __init__(self, hass: HomeAssistant, config_entry, gw) -> None:
+    def __init__(self, config_entry, gw) -> None:
         """Initialize the Eltako cover device."""
-        super().__init__(hass, config_entry, gw)
+        super().__init__(config_entry, gw)
         self._sender_id = AddressExpression.parse(config_entry.data[CONF_SENDER_ID])
 
         self._attr_is_opening = False
@@ -275,9 +268,7 @@ ENTITY_CLASS_MAP: dict[CoverEntities, type[EltakoEntity]] = {
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
-    config_entry: EltakoConfigEntry,
-    async_add_entities: AddConfigEntryEntitiesCallback,
+    config_entry: EltakoConfigEntry, async_add_entities: AddConfigEntryEntitiesCallback
 ) -> None:
     """Set up the Eltako cover platform."""
     gateway = config_entry.runtime_data
@@ -285,9 +276,9 @@ async def async_setup_entry(
     # Add devices' entities
     for subentry_id, subentry in config_entry.subentries.items():
         subentry_entities: list[EltakoEntity] = []
-        device_model = MODELS[subentry.data[CONF_DEVICE_MODEL]]
+        device_model = MODELS[subentry.data[CONF_MODEL]]
         for entity_type in device_model.covers:
             sensor_class = ENTITY_CLASS_MAP.get(entity_type)
             if sensor_class:
-                subentry_entities.append(sensor_class(hass, subentry, gateway))
+                subentry_entities.append(sensor_class(subentry, gateway))
         async_add_entities(subentry_entities, config_subentry_id=subentry_id)

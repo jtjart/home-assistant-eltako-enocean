@@ -1,4 +1,4 @@
-"""Support for Eltako light sources."""
+"""Support for Eltako Enocean light sources."""
 
 from dataclasses import dataclass
 import logging
@@ -21,13 +21,14 @@ from homeassistant.components.light import (
     LightEntityDescription,
     LightEntityFeature,
 )
+from homeassistant.const import CONF_MODEL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import UndefinedType
 from homeassistant.util.scaling import scale_ranged_value_to_int_range
 
 from . import EltakoConfigEntry
-from .const import CONF_DEVICE_MODEL, CONF_SENDER_ID
+from .const import CONF_SENDER_ID
 from .device import MODELS, LightEntities
 from .entity import EltakoEntity
 
@@ -51,9 +52,9 @@ class EltakoDimmableLight(EltakoEntity, LightEntity):
     _attr_supported_color_modes = {ColorMode.BRIGHTNESS}
     _attr_supported_features = LightEntityFeature.TRANSITION
 
-    def __init__(self, hass: HomeAssistant, config_entry, gw) -> None:
+    def __init__(self, config_entry, gw) -> None:
         """Initialize the dimmable Eltako light."""
-        super().__init__(hass, config_entry, gw)
+        super().__init__(config_entry, gw)
         self._sender_id = AddressExpression.parse(config_entry.data[CONF_SENDER_ID])
 
     async def async_turn_on(self, **kwargs: Any) -> None:
@@ -127,9 +128,9 @@ class EltakoSwitchableLight(EltakoEntity, LightEntity):
     _attr_color_mode = ColorMode.ONOFF
     _attr_supported_color_modes = {ColorMode.ONOFF}
 
-    def __init__(self, hass: HomeAssistant, config_entry, gw) -> None:
+    def __init__(self, config_entry, gw) -> None:
         """Initialize the Eltako light."""
-        super().__init__(hass, config_entry, gw)
+        super().__init__(config_entry, gw)
         self._sender_id = AddressExpression.parse(config_entry.data[CONF_SENDER_ID])
 
     async def async_turn_on(self, **kwargs: Any) -> None:
@@ -216,9 +217,9 @@ async def async_setup_entry(
     # Add devices' entities
     for subentry_id, subentry in config_entry.subentries.items():
         subentry_entities: list[EltakoEntity] = []
-        device_model = MODELS[subentry.data[CONF_DEVICE_MODEL]]
+        device_model = MODELS[subentry.data[CONF_MODEL]]
         for entity_type in device_model.lights:
             sensor_class = ENTITY_CLASS_MAP.get(entity_type)
             if sensor_class:
-                subentry_entities.append(sensor_class(hass, subentry, gateway))
+                subentry_entities.append(sensor_class(subentry, gateway))
         async_add_entities(subentry_entities, config_subentry_id=subentry_id)

@@ -1,5 +1,4 @@
-"""Support for Eltako binary sensors."""
-# TODO add invert option
+"""Support for Eltako Enocean binary sensors."""
 
 from __future__ import annotations
 
@@ -23,13 +22,12 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
-from homeassistant.const import EntityCategory
-from homeassistant.core import HomeAssistant
+from homeassistant.const import CONF_MODEL, EntityCategory
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import EltakoConfigEntry
-from .const import CONF_DEVICE_MODEL, DOMAIN
+from .const import DOMAIN
 from .device import MODELS, BinarySensorEntities
 from .entity import EltakoEntity
 from .gateway import EnOceanGateway
@@ -319,9 +317,7 @@ ENTITY_CLASS_MAP: dict[BinarySensorEntities, type[EltakoEntity]] = {
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
-    config_entry: EltakoConfigEntry,
-    async_add_entities: AddConfigEntryEntitiesCallback,
+    config_entry: EltakoConfigEntry, async_add_entities: AddConfigEntryEntitiesCallback
 ) -> None:
     """Set up the Binary Sensor platform for Eltako."""
     gateway = config_entry.runtime_data
@@ -334,9 +330,9 @@ async def async_setup_entry(
     # Add devices' entities
     for subentry_id, subentry in config_entry.subentries.items():
         subentry_entities: list[EltakoEntity] = []
-        device_model = MODELS[subentry.data[CONF_DEVICE_MODEL]]
+        device_model = MODELS[subentry.data[CONF_MODEL]]
         for entity_type in device_model.binary_sensors:
             sensor_class = ENTITY_CLASS_MAP.get(entity_type)
             if sensor_class:
-                subentry_entities.append(sensor_class(hass, subentry, gateway))
+                subentry_entities.append(sensor_class(subentry, gateway))
         async_add_entities(subentry_entities, config_subentry_id=subentry_id)

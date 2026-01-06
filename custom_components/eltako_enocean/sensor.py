@@ -1,4 +1,4 @@
-"""Support for Eltako sensors."""
+"""Support for Eltako Enocean sensors."""
 
 from __future__ import annotations
 
@@ -32,6 +32,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigSubentry
 from homeassistant.const import (
+    CONF_MODEL,
     LIGHT_LUX,
     PERCENTAGE,
     EntityCategory,
@@ -43,13 +44,12 @@ from homeassistant.const import (
     UnitOfVolume,
     UnitOfVolumeFlowRate,
 )
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util import dt as dt_util
 
 from . import EltakoConfigEntry
-from .const import CONF_DEVICE_MODEL, DOMAIN
+from .const import DOMAIN
 from .device import MODELS, SensorEntities
 from .entity import EltakoEntity
 from .gateway import EnOceanGateway
@@ -132,11 +132,7 @@ class EltakoElectricEnergySensor_A5_12_01(EltakoSensor):
     """Representation of an Eltako electric enery sensor (A5-12-01)."""
 
     def __init__(
-        self,
-        hass: HomeAssistant,
-        config_entry: ConfigSubentry,
-        gw: EnOceanGateway,
-        tariff: int,
+        self, config_entry: ConfigSubentry, gw: EnOceanGateway, tariff: int
     ) -> None:
         """Initialize the Eltako electric energy sensor."""
         self.entity_description = EltakoSensorEntityDescription(
@@ -145,9 +141,8 @@ class EltakoElectricEnergySensor_A5_12_01(EltakoSensor):
             device_class=SensorDeviceClass.ENERGY,
             state_class=SensorStateClass.TOTAL_INCREASING,
         )
-        super().__init__(hass, config_entry, gw)
+        super().__init__(config_entry, gw)
         self._tariff = tariff
-        # TODO disable as standard
 
     def value_changed(self, msg: ESP2Message):
         """Update the internal state of the sensor."""
@@ -167,21 +162,18 @@ class EltakoElectricEnergySensor_A5_12_01(EltakoSensor):
 class EltakoElectricEnergySensor_A5_12_01_0(EltakoElectricEnergySensor_A5_12_01):
     """Representation of an Eltako electric enery sensor (A5-12-01 Tariff 0)."""
 
-    def __init__(
-        self, hass: HomeAssistant, config_entry: ConfigSubentry, gw: EnOceanGateway
-    ) -> None:
+    def __init__(self, config_entry: ConfigSubentry, gw: EnOceanGateway) -> None:
         """Initialize the Eltako electric energy sensor."""
-        super().__init__(hass, config_entry, gw, 0)
+        super().__init__(config_entry, gw, 0)
 
 
 class EltakoElectricEnergySensor_A5_12_01_1(EltakoElectricEnergySensor_A5_12_01):
     """Representation of an Eltako electric enery sensor (A5-12-01 Tariff 1)."""
 
-    def __init__(
-        self, hass: HomeAssistant, config_entry: ConfigSubentry, gw: EnOceanGateway
-    ) -> None:
+    def __init__(self, config_entry: ConfigSubentry, gw: EnOceanGateway) -> None:
         """Initialize the Eltako electric energy sensor."""
-        super().__init__(hass, config_entry, gw, 1)
+        super().__init__(config_entry, gw, 1)
+        self.entity_registry_enabled_default = False
 
 
 class EltakoGasFlowRateSensor_A5_12_02(EltakoSensor):
@@ -672,32 +664,23 @@ class EltakoHumiditySensor_A5_10_12(EltakoSensor):
 class EltakoVOCSensor_A5_09_0C(EltakoSensor):
     """Representation of an Eltako volatile organic Compound (VOC) sensor (A5-09-0C)."""
 
-    def __init__(self, hass: HomeAssistant, config_entry, gw) -> None:
-        """Initialize the Eltako VOC sensor."""
-        # TODO get voc_type from eep.VOC_SubstancesType
-        self._voc_type = VOC_SubstancesType.VOCT_TOTAL
-        _voc_type_name = (
-            self._voc_type.name_de
-            if "de" in hass.config.language
-            else self._voc_type.name_en
-        )
-        self.entity_description = EltakoSensorEntityDescription(
-            key="voc_sensor_" + _voc_type_name.lower(),
-            device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
-            # device_class=SensorDeviceClass.AQI,
-            name=_voc_type_name,  # TODO naming generic
-            native_unit_of_measurement=self._voc_type.unit,  # TODO get unit from msg
-            state_class=SensorStateClass.MEASUREMENT,
-        )
-        super().__init__(hass, config_entry, gw)
-        # self._attr_suggested_unit_of_measurement = voc_type.unit
+    entity_description = EltakoSensorEntityDescription(
+        key="volatile_organic_compounds",
+        device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
+        native_unit_of_measurement=VOC_SubstancesType.VOCT_TOTAL.unit,
+        state_class=SensorStateClass.MEASUREMENT,
+    )
 
     def value_changed(self, msg: ESP2Message):
         """Update the internal state of the sensor."""
         decoded = A5_09_0C.decode_message(msg)
-        if decoded.voc_type.index == self._voc_type.index:
+        if decoded.voc_type.index == VOC_SubstancesType.VOCT_TOTAL.index:
             self._attr_native_value = decoded.concentration
-        self.schedule_update_ha_state()
+            self.schedule_update_ha_state()
+        else:
+            _LOGGER.warning(
+                "Received VOC type (%s) not supported", decoded.voc_type.name_en
+            )
 
 
 class GatewayLastReceivedMessage(SensorEntity):
@@ -760,7 +743,6 @@ class GatewayReceivedMessagesInActiveSession(SensorEntity):
         self.schedule_update_ha_state()
 
 
-# TODO maybe improve type hint of EltakoSensor like callback
 ENTITY_CLASS_MAP: dict[SensorEntities, type[EltakoEntity]] = {
     SensorEntities.A5_04_01_TEMPERATURE: EltakoTemperatureSensor_A5_04_01,
     SensorEntities.A5_04_01_HUMIDITY: EltakoHumiditySensor_A5_04_01,
@@ -795,14 +777,11 @@ ENTITY_CLASS_MAP: dict[SensorEntities, type[EltakoEntity]] = {
     SensorEntities.A5_13_02_WEATHER_STATION_ILLUMINANCE_EAST: EltakoWeatherStationIlluminanceEastSensor,
     SensorEntities.A5_13_02_WEATHER_STATION_ILLUMINANCE_CENTRAL: EltakoWeatherStationIlluminanceCentralSensor,
     SensorEntities.A5_13_02_WEATHER_STATION_ILLUMINANCE_WEST: EltakoWeatherStationIlluminanceWestSensor,
-    # TODO F6_...
 }
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
-    config_entry: EltakoConfigEntry,
-    async_add_entities: AddConfigEntryEntitiesCallback,
+    config_entry: EltakoConfigEntry, async_add_entities: AddConfigEntryEntitiesCallback
 ) -> None:
     """Set up an Eltako sensor device."""
     gateway = config_entry.runtime_data
@@ -816,9 +795,9 @@ async def async_setup_entry(
     # Add devices' entities
     for subentry_id, subentry in config_entry.subentries.items():
         subentry_entities: list[EltakoEntity] = []
-        device_model = MODELS[subentry.data[CONF_DEVICE_MODEL]]
+        device_model = MODELS[subentry.data[CONF_MODEL]]
         for entity_type in device_model.sensors:
             sensor_class = ENTITY_CLASS_MAP.get(entity_type)
             if sensor_class:
-                subentry_entities.append(sensor_class(hass, subentry, gateway))
+                subentry_entities.append(sensor_class(subentry, gateway))
         async_add_entities(subentry_entities, config_subentry_id=subentry_id)

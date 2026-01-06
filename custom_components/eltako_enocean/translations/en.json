@@ -8,13 +8,13 @@
           "name": "Name",
           "device_model": "Gateway type",
           "serial_port": "USB gateway path",
-          "base_id": "Gateway base ID",
+          "id": "Gateway base ID",
           "auto_reconnect": "Automatic reconnection",
           "message_delay": "Message delay (ms)",
           "fast_status_change": "Fast status change"
         },
         "data_description": {
-          "base_id": "This is the base ID of the gateway. The sending IDs will be based on it.\nThis is not the device's ID inside the Eltako BUS.\nFor wired devices it is recommended to use (00-00-B0-00)\nFor wireless devices like the USB300 you need to add its own base ID (FF-XX-XX-XX)."
+          "id": "This is the base ID of the gateway. The sending IDs will be based on it.\nThis is not the device's ID inside the Eltako BUS.\nFor wired devices it is recommended to use (00-00-B0-00)\nFor wireless devices like the USB300 you need to add its own base ID (FF-XX-XX-XX)."
         }
       }
     },
@@ -26,18 +26,19 @@
     "abort": {}
   },
   "config_subentries": {
-    "actuator": {
+    "device": {
       "initiate_flow": {
         "reconfigure": "TBD",
-        "user": "Add Actuator"
+        "user": "Add device"
       },
       "step": {
         "user": {
-          "title": "Select the actuator to add",
+          "title": "Select the device to add",
           "menu_options": {
             "cover": "Cover",
             "switch": "Switch",
-            "light": "Light"
+            "light": "Light",
+            "sensor": "Sensor"
           }
         },
         "cover": {
@@ -70,21 +71,8 @@
             "device_model": "Device model",
             "sender_id": "Sender ID"
           }
-        }
-      },
-      "error": {
-        "invalid_cover_time": "You need to fill either no or both cover times (open and close).",
-        "invalid_id": "[%key:component::eltako_enocean::config::error::invalid_id%]"
-      },
-      "abort": {}
-    },
-    "sensor": {
-      "initiate_flow": {
-        "reconfigure": "TBD",
-        "user": "Add Sensor"
-      },
-      "step": {
-        "user": {
+        },
+        "sensor": {
           "title": "Select the sensor to add",
           "data": {
             "name": "Name",
@@ -94,20 +82,14 @@
         }
       },
       "error": {
+        "already_configured": "A device with this ID is already configured for this gateway.",
+        "invalid_cover_time": "You need to fill either no or both cover times (open and close).",
         "invalid_id": "[%key:component::eltako_enocean::config::error::invalid_id%]"
       },
       "abort": {}
     }
   },
   "options": {},
-  "selector": {
-    "platform": {
-      "options": {
-        "switch": "Switch",
-        "light": "Light"
-      }
-    }
-  },
   "entity": {
     "binary_sensor": {
       "contact": {
