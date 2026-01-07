@@ -88,7 +88,9 @@
         "invalid_cover_time": "You need to fill either no or both cover times (open and close).",
         "invalid_id": "[%key:component::eltako_enocean::config::error::invalid_id%]"
       },
-      "abort": {}
+      "abort": {
+        "model_not_found": "Reconfiguration failed. The device model was not found."
+      }
     }
   },
   "options": {},

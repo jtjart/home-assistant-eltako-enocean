@@ -38,6 +38,7 @@ from .device import (
     COVER_MODELS,
     GATEWAY_MODELS,
     LIGHT_MODELS,
+    MODELS,
     SENSOR_MODELS,
     SWITCH_MODELS,
     ModelDefinition,
@@ -184,6 +185,11 @@ class DeviceTypeConfig:
 class DeviceSubentryFlowHandler(ConfigSubentryFlow):
     """Handle subentry flow for adding and modifying an device."""
 
+    def _error_entries_match(self, user_input: dict[str, Any]):
+        for subentry in self._get_entry().subentries.values():
+            if str(user_input[CONF_ID]).lower() == str(subentry.data[CONF_ID]).lower():
+                raise SchemaFlowError(CONF_ID, "already_configured")
+
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> SubentryFlowResult:
@@ -264,6 +270,12 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
             except SchemaFlowError as e:
                 errors[e.args[0]] = e.args[1]
             else:
+                if self.source == SOURCE_RECONFIGURE:
+                    return self.async_update_reload_and_abort(
+                        self._get_entry(),
+                        self._get_reconfigure_subentry(),
+                        data_updates=user_input,
+                    )
                 return self.async_create_entry(
                     title=user_input[CONF_NAME], data=user_input
                 )
@@ -281,7 +293,17 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
             CONF_ID: "00-00-00-01",
             CONF_SENDER_ID: "00-00-B0-01",
         }
-        data_schema = self.add_suggested_values_to_schema(data_schema, suggested_values)
+
+        if user_input:
+            data_schema = self.add_suggested_values_to_schema(data_schema, user_input)
+        elif self.source == SOURCE_RECONFIGURE:
+            data_schema = self.add_suggested_values_to_schema(
+                data_schema, self._get_reconfigure_subentry().data
+            )
+        else:
+            data_schema = self.add_suggested_values_to_schema(
+                data_schema, suggested_values
+            )
 
         return self.async_show_form(
             step_id=device_type_config.step_name,
@@ -290,7 +312,18 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
             last_step=True,
         )
 
-    def _error_entries_match(self, user_input: dict[str, Any]):
-        for subentry in self._get_entry().subentries.values():
-            if str(user_input[CONF_ID]).lower() == str(subentry.data[CONF_ID]).lower():
-                raise SchemaFlowError(CONF_ID, "already_configured")
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> SubentryFlowResult:
+        """User flow to modify an existing device."""
+        config_subentry = self._get_reconfigure_subentry()
+        model = MODELS[config_subentry.data[CONF_MODEL]]
+        if model in COVER_MODELS:
+            return await self.async_step_cover()
+        if model in LIGHT_MODELS:
+            return await self.async_step_light()
+        if model in SENSOR_MODELS:
+            return await self.async_step_sensor()
+        if model in SWITCH_MODELS:
+            return await self.async_step_switch()
+        return self.async_abort(reason="model_not_found")
