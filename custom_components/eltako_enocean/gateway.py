@@ -17,7 +17,6 @@ from eltakobus.message import (
 )
 from eltakobus.serial import RS485SerialInterfaceV2
 from eltakobus.util import AddressExpression
-from esp2_gateway_adapter.esp3_serial_com import ESP3SerialCommunicator
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ID, CONF_MODEL, CONF_NAME
@@ -52,7 +51,6 @@ class EnOceanGateway:
         self._attr_dev_name = config_entry.data[CONF_NAME]
 
         _LOGGER.info("Initializes Gateway Device '%s'", self._attr_dev_name)
-        _LOGGER.debug(config_entry.data)
 
         self._device_model = GATEWAY_MODELS[config_entry.data[CONF_MODEL]]
         self._serial_port = str(config_entry.data[CONF_SERIAL_PORT])
@@ -63,7 +61,6 @@ class EnOceanGateway:
         self._message_delay = float(config_entry.data[CONF_GATEWAY_MESSAGE_DELAY])
         self._fast_status_change = bool(config_entry.data[CONF_FAST_STATUS_CHANGE])
         self._baud_rate = self._device_model.baud_rate
-        self._unique_id = config_entry.entry_id
 
         self._init_bus()
 
@@ -72,7 +69,6 @@ class EnOceanGateway:
     ):
         """Register a callback for a specific address."""
         self.address_subscriptions.setdefault(address[0], []).append(callback)
-        await self.async_send_message_to_serial_bus(EltakoPoll(address))
         # Return an "unsubscribe" function
         return lambda: self.address_subscriptions[address[0]].remove(callback)
 
@@ -103,6 +99,10 @@ class EnOceanGateway:
                 auto_reconnect=self._auto_reconnect_enabled,
             )
         else:
+            from esp2_gateway_adapter.esp3_serial_com import (  # noqa: PLC0415
+                ESP3SerialCommunicator,
+            )
+
             self._bus = ESP3SerialCommunicator(
                 filename=self._serial_port,
                 callback=self._callback_receive_message_from_serial_bus,
@@ -121,13 +121,13 @@ class EnOceanGateway:
     async def async_setup(self):
         """Initialized serial bus and register callback function on HA event bus."""
         self._bus.start()
-        _LOGGER.debug("%s was started", self.unique_id)
+        _LOGGER.debug("%s was started", self._serial_port)
 
     def unload(self):
         """Unload the serial bus."""
         self._bus.stop()
         self._bus.join()
-        _LOGGER.debug("%s was stopped", self.unique_id)
+        _LOGGER.debug("%s was stopped", self._serial_port)
 
     async def async_send_message_to_serial_bus(self, msg):
         """Send a message to the serial bus."""
@@ -147,7 +147,7 @@ class EnOceanGateway:
         if isinstance(msg, EltakoPoll):
             return
 
-        _LOGGER.debug("[%s] Received message: %s", self.unique_id, msg)
+        _LOGGER.debug("[%s] Received message: %s", self._serial_port, msg)
         for callback in self.general_subscriptions:
             callback()
 
@@ -166,11 +166,6 @@ class EnOceanGateway:
                     callback(msg)
                 except WrongOrgError:
                     _LOGGER.warning("Could not decode message: %s", msg)
-
-    @property
-    def unique_id(self) -> str:
-        """Return the unique id of the gateway."""
-        return self._unique_id
 
     @property
     def model(self) -> str:

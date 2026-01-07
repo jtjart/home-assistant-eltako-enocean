@@ -53,7 +53,6 @@ from . import EltakoConfigEntry
 from .const import DOMAIN
 from .device import MODELS, SensorEntities
 from .entity import EltakoEntity
-from .gateway import EnOceanGateway
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -133,7 +132,7 @@ class EltakoElectricEnergySensor_A5_12_01(EltakoSensor):
     """Representation of an Eltako electric enery sensor (A5-12-01)."""
 
     def __init__(
-        self, config_entry: ConfigSubentry, gw: EnOceanGateway, tariff: int
+        self, config_entry: EltakoConfigEntry, subentry: ConfigSubentry, tariff: int
     ) -> None:
         """Initialize the Eltako electric energy sensor."""
         self.entity_description = EltakoSensorEntityDescription(
@@ -142,7 +141,7 @@ class EltakoElectricEnergySensor_A5_12_01(EltakoSensor):
             device_class=SensorDeviceClass.ENERGY,
             state_class=SensorStateClass.TOTAL_INCREASING,
         )
-        super().__init__(config_entry, gw)
+        super().__init__(config_entry, subentry)
         self._tariff = tariff
 
     def value_changed(self, msg: ESP2Message):
@@ -163,17 +162,21 @@ class EltakoElectricEnergySensor_A5_12_01(EltakoSensor):
 class EltakoElectricEnergySensor_A5_12_01_0(EltakoElectricEnergySensor_A5_12_01):
     """Representation of an Eltako electric enery sensor (A5-12-01 Tariff 0)."""
 
-    def __init__(self, config_entry: ConfigSubentry, gw: EnOceanGateway) -> None:
+    def __init__(
+        self, config_entry: EltakoConfigEntry, subentry: ConfigSubentry
+    ) -> None:
         """Initialize the Eltako electric energy sensor."""
-        super().__init__(config_entry, gw, 0)
+        super().__init__(config_entry, subentry, 0)
 
 
 class EltakoElectricEnergySensor_A5_12_01_1(EltakoElectricEnergySensor_A5_12_01):
     """Representation of an Eltako electric enery sensor (A5-12-01 Tariff 1)."""
 
-    def __init__(self, config_entry: ConfigSubentry, gw: EnOceanGateway) -> None:
+    def __init__(
+        self, config_entry: EltakoConfigEntry, subentry: ConfigSubentry
+    ) -> None:
         """Initialize the Eltako electric energy sensor."""
-        super().__init__(config_entry, gw, 1)
+        super().__init__(config_entry, subentry, 1)
         self.entity_registry_enabled_default = False
 
 
@@ -694,11 +697,13 @@ class GatewayLastReceivedMessage(SensorEntity):
         entity_category=EntityCategory.DIAGNOSTIC,
     )
 
-    def __init__(self, gw: EnOceanGateway) -> None:
+    def __init__(self, config_entry: EltakoConfigEntry) -> None:
         """Initialize the Eltako gateway last message received sensor."""
-        self._attr_gateway = gw
-        self._attr_unique_id = f"{gw.unique_id}_{self.entity_description.key}"
-        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, gw.unique_id)})
+        self._attr_gateway = config_entry.runtime_data
+        self._attr_unique_id = f"{config_entry.entry_id}_{self.entity_description.key}"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, config_entry.entry_id)}
+        )
         self._attr_native_value = None
 
     async def async_added_to_hass(self) -> None:
@@ -723,11 +728,13 @@ class GatewayReceivedMessagesInActiveSession(SensorEntity):
         state_class=SensorStateClass.TOTAL_INCREASING,
     )
 
-    def __init__(self, gw: EnOceanGateway) -> None:
+    def __init__(self, config_entry: EltakoConfigEntry) -> None:
         """Initialize the Eltako gateway received message count sensor."""
-        self._attr_gateway = gw
-        self._attr_unique_id = f"{gw.unique_id}_{self.entity_description.key}"
-        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, gw.unique_id)})
+        self._attr_gateway = config_entry.runtime_data
+        self._attr_unique_id = f"{config_entry.entry_id}_{self.entity_description.key}"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, config_entry.entry_id)}
+        )
         self._attr_native_value = 0
 
     async def async_added_to_hass(self) -> None:
@@ -787,12 +794,11 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up an Eltako sensor device."""
-    gateway = config_entry.runtime_data
 
     # Add gateway's entities
     entities: list[SensorEntity] = []
-    entities.append(GatewayLastReceivedMessage(gateway))
-    entities.append(GatewayReceivedMessagesInActiveSession(gateway))
+    entities.append(GatewayLastReceivedMessage(config_entry))
+    entities.append(GatewayReceivedMessagesInActiveSession(config_entry))
     async_add_entities(entities)
 
     # Add devices' entities
@@ -802,5 +808,5 @@ async def async_setup_entry(
         for entity_type in device_model.sensors:
             sensor_class = ENTITY_CLASS_MAP.get(entity_type)
             if sensor_class:
-                subentry_entities.append(sensor_class(subentry, gateway))
+                subentry_entities.append(sensor_class(config_entry, subentry))
         async_add_entities(subentry_entities, config_subentry_id=subentry_id)

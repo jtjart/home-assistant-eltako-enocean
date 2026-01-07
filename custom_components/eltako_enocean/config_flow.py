@@ -268,7 +268,7 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
                 vol.Required(CONF_MODEL): vol.In(model_options),
             }
         )
-        data_schema.extend(device_type_config.extra_schema)
+        data_schema = data_schema.extend(device_type_config.extra_schema)
         suggested_values = {
             CONF_ID: "00-00-00-01",
             CONF_SENDER_ID: "00-00-B0-01",

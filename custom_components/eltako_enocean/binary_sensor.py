@@ -31,7 +31,6 @@ from . import EltakoConfigEntry
 from .const import DOMAIN
 from .device import MODELS, BinarySensorEntities
 from .entity import EltakoEntity
-from .gateway import EnOceanGateway
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -281,11 +280,13 @@ class GatewayConnectionState(BinarySensorEntity):
         entity_category=EntityCategory.DIAGNOSTIC,
     )
 
-    def __init__(self, gw: EnOceanGateway) -> None:
+    def __init__(self, config_entry: EltakoConfigEntry) -> None:
         """Initialize the Eltako gateway connection state sensor."""
-        self._attr_gateway = gw
-        self._attr_unique_id = f"{gw.unique_id}_{self.entity_description.key}"
-        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, gw.unique_id)})
+        self._attr_gateway = config_entry.runtime_data
+        self._attr_unique_id = f"{config_entry.entry_id}_{self.entity_description.key}"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, config_entry.entry_id)}
+        )
 
     async def async_added_to_hass(self) -> None:
         """Call when entity about to be added to hass. Register callback."""
@@ -295,7 +296,7 @@ class GatewayConnectionState(BinarySensorEntity):
 
     def state_changed(self, state: bool) -> None:
         """Update the current state."""
-        _LOGGER.debug("Gateway %s connected: %s", self._attr_gateway.unique_id, state)
+        _LOGGER.debug("Gateway %s connected: %s", self.name, state)
         self._attr_is_on = state
         self.schedule_update_ha_state()
 
@@ -323,11 +324,10 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Binary Sensor platform for Eltako."""
-    gateway = config_entry.runtime_data
 
     # Add gateway's entities
     entities: list[BinarySensorEntity] = []
-    entities.append(GatewayConnectionState(gateway))
+    entities.append(GatewayConnectionState(config_entry))
     async_add_entities(entities)
 
     # Add devices' entities
@@ -337,5 +337,5 @@ async def async_setup_entry(
         for entity_type in device_model.binary_sensors:
             sensor_class = ENTITY_CLASS_MAP.get(entity_type)
             if sensor_class:
-                subentry_entities.append(sensor_class(subentry, gateway))
+                subentry_entities.append(sensor_class(config_entry, subentry))
         async_add_entities(subentry_entities, config_subentry_id=subentry_id)

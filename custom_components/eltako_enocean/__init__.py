@@ -31,7 +31,7 @@ async def async_setup_entry(
     device_registry = dr.async_get(hass)
     device_registry.async_get_or_create(
         config_entry_id=config_entry.entry_id,
-        identifiers={(DOMAIN, enocean_gateway.unique_id)},
+        identifiers={(DOMAIN, config_entry.entry_id)},
         manufacturer=MANUFACTURER,
         model=MODELS[config_entry.data[CONF_MODEL]].name,
         name=config_entry.data[CONF_NAME],
@@ -40,13 +40,11 @@ async def async_setup_entry(
         device_registry.async_get_or_create(
             config_entry_id=config_entry.entry_id,
             config_subentry_id=subentry.subentry_id,
-            identifiers={
-                (DOMAIN, f"{enocean_gateway.unique_id}_{subentry.subentry_id}")
-            },
+            identifiers={(DOMAIN, f"{config_entry.entry_id}_{subentry.subentry_id}")},
             manufacturer=MANUFACTURER,
             model=MODELS[subentry.data[CONF_MODEL]].name,
             name=subentry.data[CONF_NAME],
-            via_device=(DOMAIN, enocean_gateway.unique_id),
+            via_device=(DOMAIN, config_entry.entry_id),
         )
 
     config_entry.async_on_unload(config_entry.add_update_listener(async_reload_entry))

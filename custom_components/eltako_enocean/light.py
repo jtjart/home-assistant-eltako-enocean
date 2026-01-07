@@ -212,7 +212,6 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Eltako light platform."""
-    gateway = config_entry.runtime_data
 
     # Add devices' entities
     for subentry_id, subentry in config_entry.subentries.items():
@@ -221,5 +220,5 @@ async def async_setup_entry(
         for entity_type in device_model.lights:
             sensor_class = ENTITY_CLASS_MAP.get(entity_type)
             if sensor_class:
-                subentry_entities.append(sensor_class(subentry, gateway))
+                subentry_entities.append(sensor_class(config_entry, subentry))
         async_add_entities(subentry_entities, config_subentry_id=subentry_id)

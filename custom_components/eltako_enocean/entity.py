@@ -9,6 +9,7 @@ from homeassistant.config_entries import ConfigSubentry
 from homeassistant.const import CONF_ID
 from homeassistant.helpers.entity import DeviceInfo, Entity
 
+from . import EltakoConfigEntry
 from .const import DOMAIN
 from .gateway import EnOceanGateway
 
@@ -20,18 +21,20 @@ class EltakoEntity(Entity):
 
     _attr_should_poll = False
 
-    def __init__(self, config_entry: ConfigSubentry, gw: EnOceanGateway) -> None:
+    def __init__(
+        self, config_entry: EltakoConfigEntry, subentry: ConfigSubentry
+    ) -> None:
         """Initialize the device."""
-        self._attr_gateway = gw
+        self._attr_gateway = config_entry.runtime_data
 
-        self._attr_dev_id = AddressExpression.parse(config_entry.data[CONF_ID])
+        self._attr_dev_id = AddressExpression.parse(subentry.data[CONF_ID])
         self._attr_unique_id = (
-            f"{config_entry.subentry_id}_{self.entity_description.key}"
+            f"{subentry.subentry_id}_{self.entity_description.key}"
             if self.entity_description.key
-            else config_entry.subentry_id
+            else subentry.subentry_id
         )
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, f"{gw.unique_id}_{config_entry.subentry_id}")}
+            identifiers={(DOMAIN, f"{config_entry.entry_id}_{subentry.subentry_id}")}
         )
 
         _LOGGER.debug("Added entity %s (%s)", self.dev_id, type(self).__name__)
