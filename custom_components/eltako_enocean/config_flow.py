@@ -66,7 +66,7 @@ def _validate_cover(user_input: dict[str, Any]):
         raise SchemaFlowError(CONF_TIME_OPENS, "invalid_cover_time")
 
 
-def _validate_none(_):
+def _validate_none(_: Any):
     pass
 
 
