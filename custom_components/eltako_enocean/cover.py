@@ -139,7 +139,7 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
                 * self._time_closes
             )
         else:
-            moving_time = 0
+            return
 
         command = 0x01 if direction == DIRECTION_UP else 0x02
         moving_time = max(1, min(moving_time, 255))
@@ -173,12 +173,12 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
         tilt_position = kwargs[ATTR_TILT_POSITION]
         tilt_diff = tilt_position - self._attr_current_cover_tilt_position
 
-        if tilt_diff == 0:
-            return
         if tilt_diff > 0:
             direction = DIRECTION_UP
         elif tilt_diff < 0:
             direction = DIRECTION_DOWN
+        else:
+            return
         sleeptime = abs(tilt_diff) / 100.0 * self._time_tilts
 
         command = 0x01 if direction == DIRECTION_UP else 0x02  # up or down
