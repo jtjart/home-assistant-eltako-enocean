@@ -317,13 +317,13 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
     ) -> SubentryFlowResult:
         """User flow to modify an existing device."""
         config_subentry = self._get_reconfigure_subentry()
-        model = MODELS[config_subentry.data[CONF_MODEL]]
-        if model in COVER_MODELS:
+        model_key = config_subentry.data[CONF_MODEL]
+        if model_key in COVER_MODELS:
             return await self.async_step_cover()
-        if model in LIGHT_MODELS:
+        if model_key in LIGHT_MODELS:
             return await self.async_step_light()
-        if model in SENSOR_MODELS:
+        if model_key in SENSOR_MODELS:
             return await self.async_step_sensor()
-        if model in SWITCH_MODELS:
+        if model_key in SWITCH_MODELS:
             return await self.async_step_switch()
         return self.async_abort(reason="model_not_found")
