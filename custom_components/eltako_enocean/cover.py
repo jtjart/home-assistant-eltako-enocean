@@ -6,6 +6,7 @@ import logging
 from typing import Any
 
 from eltakobus.eep import G5_3F_7F, H5_3F_7F
+from eltakobus.message import ESP2Message
 from eltakobus.util import AddressExpression
 
 from homeassistant.components.cover import (
@@ -15,6 +16,7 @@ from homeassistant.components.cover import (
     CoverEntityDescription,
     CoverEntityFeature,
 )
+from homeassistant.config_entries import ConfigSubentry
 from homeassistant.const import CONF_MODEL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -45,9 +47,11 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
 
     entity_description = EltakoCoverEntityDescription()
 
-    def __init__(self, config_entry, gw) -> None:
+    def __init__(
+        self, config_entry: EltakoConfigEntry, subentry: ConfigSubentry
+    ) -> None:
         """Initialize the Eltako cover device."""
-        super().__init__(config_entry, gw)
+        super().__init__(config_entry, subentry)
         self._sender_id = AddressExpression.parse(config_entry.data[CONF_SENDER_ID])
 
         self._attr_is_opening = False
@@ -188,7 +192,7 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
         msg = H5_3F_7F(0, 0x00, 1).encode_message(address)
         await self.async_send_message(msg)
 
-    def value_changed(self, msg):
+    def value_changed(self, msg: ESP2Message):
         """Update the internal state of the cover."""
         decoded = G5_3F_7F.decode_message(msg)
 

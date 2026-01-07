@@ -46,18 +46,18 @@ from .device import (
 _LOGGER = logging.getLogger(__name__)
 
 
-def _validate_enocean_id(user_input, key):
+def _validate_enocean_id(user_input: dict[str, Any], key: str):
     try:
         cv.matches_regex(ID_REGEX)(user_input[key])
     except vol.Invalid as e:
         raise SchemaFlowError(key, "invalid_id") from e
 
 
-def _validate_sender(user_input):
+def _validate_sender(user_input: dict[str, Any]):
     _validate_enocean_id(user_input, CONF_SENDER_ID)
 
 
-def _validate_cover(user_input):
+def _validate_cover(user_input: dict[str, Any]):
     _validate_enocean_id(user_input, CONF_SENDER_ID)
 
     has_closes = CONF_TIME_CLOSES in user_input
@@ -93,7 +93,9 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
     VERSION = 1
     MINOR_VERSION = 1
 
-    async def async_step_user(self, user_input=None) -> ConfigFlowResult:
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Configure an Eltako Gateway."""
         errors: dict[str, str] = {}
 
@@ -190,7 +192,9 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
             step_id="user", menu_options=["cover", "switch", "light", "sensor"]
         )
 
-    async def async_step_cover(self, user_input=None) -> SubentryFlowResult:
+    async def async_step_cover(
+        self, user_input: dict[str, Any] | None = None
+    ) -> SubentryFlowResult:
         """Add a cover device."""
         device_type_config = DeviceTypeConfig(
             step_name="cover",
@@ -211,7 +215,9 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
         )
         return await self._async_step_device_type(device_type_config, user_input)
 
-    async def async_step_switch(self, user_input=None) -> SubentryFlowResult:
+    async def async_step_switch(
+        self, user_input: dict[str, Any] | None = None
+    ) -> SubentryFlowResult:
         """Add a switch device."""
         device_type_config = DeviceTypeConfig(
             step_name="switch",
@@ -221,7 +227,9 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
         )
         return await self._async_step_device_type(device_type_config, user_input)
 
-    async def async_step_light(self, user_input=None) -> SubentryFlowResult:
+    async def async_step_light(
+        self, user_input: dict[str, Any] | None = None
+    ) -> SubentryFlowResult:
         """Add a light device."""
         device_type_config = DeviceTypeConfig(
             step_name="light",
@@ -244,7 +252,7 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
         return await self._async_step_device_type(device_type_config, user_input)
 
     async def _async_step_device_type(
-        self, device_type_config: DeviceTypeConfig, user_input
+        self, device_type_config: DeviceTypeConfig, user_input: dict[str, Any] | None
     ):
         errors: dict[str, str] = {}
 
@@ -282,7 +290,7 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
             last_step=True,
         )
 
-    def _error_entries_match(self, user_input):
+    def _error_entries_match(self, user_input: dict[str, Any]):
         for subentry in self._get_entry().subentries.values():
             if str(user_input[CONF_ID]).lower() == str(subentry.data[CONF_ID]).lower():
                 raise SchemaFlowError(CONF_ID, "already_configured")

@@ -9,6 +9,7 @@ from eltakobus.message import ESP2Message
 from eltakobus.util import AddressExpression
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
+from homeassistant.config_entries import ConfigSubentry
 from homeassistant.const import CONF_MODEL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -36,9 +37,11 @@ class EltakoStandardSwitch(EltakoEntity, SwitchEntity):
 
     entity_description = EltakoSwitchEntityDescription()
 
-    def __init__(self, config_entry, gw) -> None:
+    def __init__(
+        self, config_entry: EltakoConfigEntry, subentry: ConfigSubentry
+    ) -> None:
         """Initialize the Eltako switch device."""
-        super().__init__(config_entry, gw)
+        super().__init__(config_entry, subentry)
         self._sender_id = AddressExpression.parse(config_entry.data[CONF_SENDER_ID])
 
     async def async_turn_on(self, **kwargs: Any) -> None:

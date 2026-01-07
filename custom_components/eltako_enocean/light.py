@@ -11,6 +11,7 @@ from eltakobus.eep import (
     CentralCommandDimming,
     CentralCommandSwitching,
 )
+from eltakobus.message import ESP2Message
 from eltakobus.util import AddressExpression
 
 from homeassistant.components.light import (
@@ -21,6 +22,7 @@ from homeassistant.components.light import (
     LightEntityDescription,
     LightEntityFeature,
 )
+from homeassistant.config_entries import ConfigSubentry
 from homeassistant.const import CONF_MODEL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -52,9 +54,11 @@ class EltakoDimmableLight(EltakoEntity, LightEntity):
     _attr_supported_color_modes = {ColorMode.BRIGHTNESS}
     _attr_supported_features = LightEntityFeature.TRANSITION
 
-    def __init__(self, config_entry, gw) -> None:
+    def __init__(
+        self, config_entry: EltakoConfigEntry, subentry: ConfigSubentry
+    ) -> None:
         """Initialize the dimmable Eltako light."""
-        super().__init__(config_entry, gw)
+        super().__init__(config_entry, subentry)
         self._sender_id = AddressExpression.parse(config_entry.data[CONF_SENDER_ID])
 
     async def async_turn_on(self, **kwargs: Any) -> None:
@@ -90,7 +94,7 @@ class EltakoDimmableLight(EltakoEntity, LightEntity):
             self._attr_is_on = False
             self.schedule_update_ha_state()
 
-    def value_changed(self, msg):
+    def value_changed(self, msg: ESP2Message):
         """Update the internal state of this device."""
         if msg.org == 0x05:
             _LOGGER.debug(
@@ -128,9 +132,11 @@ class EltakoSwitchableLight(EltakoEntity, LightEntity):
     _attr_color_mode = ColorMode.ONOFF
     _attr_supported_color_modes = {ColorMode.ONOFF}
 
-    def __init__(self, config_entry, gw) -> None:
+    def __init__(
+        self, config_entry: EltakoConfigEntry, subentry: ConfigSubentry
+    ) -> None:
         """Initialize the Eltako light."""
-        super().__init__(config_entry, gw)
+        super().__init__(config_entry, subentry)
         self._sender_id = AddressExpression.parse(config_entry.data[CONF_SENDER_ID])
 
     async def async_turn_on(self, **kwargs: Any) -> None:
@@ -157,7 +163,7 @@ class EltakoSwitchableLight(EltakoEntity, LightEntity):
             self._attr_is_on = False
             self.schedule_update_ha_state()
 
-    def value_changed(self, msg):
+    def value_changed(self, msg: ESP2Message):
         """Update the internal state of this device."""
         decoded = M5_38_08.decode_message(msg)
 

@@ -83,7 +83,7 @@ class EnOceanGateway:
         # Return an "unsubscribe" function
         return lambda: self.connection_state_subscriptons.remove(callback)
 
-    def _fire_connection_state_changed_event(self, status):
+    def _fire_connection_state_changed_event(self, status: bool):
         for callback in self.connection_state_subscriptons:
             callback(status)
 
@@ -127,13 +127,11 @@ class EnOceanGateway:
         self._bus.join()
         _LOGGER.debug("%s was stopped", self._serial_port)
 
-    async def async_send_message_to_serial_bus(self, msg):
+    async def async_send_message_to_serial_bus(self, msg: ESP2Message):
         """Send a message to the serial bus."""
         if self._bus.is_active():
-            if isinstance(msg, ESP2Message):
-                _LOGGER.debug("Send message: %s (%s)", msg, msg.serialize().hex())
-
-                await self._bus.send(msg)
+            _LOGGER.debug("Send message: %s (%s)", msg, msg.serialize().hex())
+            await self._bus.send(msg)
         else:
             _LOGGER.warning("Serial port %s is not available", self._serial_port)
 
