@@ -52,7 +52,7 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
     ) -> None:
         """Initialize the Eltako cover device."""
         super().__init__(config_entry, subentry)
-        self._sender_id = AddressExpression.parse(config_entry.data[CONF_SENDER_ID])
+        self._sender_id = AddressExpression.parse(subentry.data[CONF_SENDER_ID])
 
         self._attr_is_opening = False
         self._attr_is_closing = False
@@ -67,17 +67,14 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
             CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE | CoverEntityFeature.STOP
         )
 
-        if (
-            CONF_TIME_CLOSES in config_entry.data
-            and CONF_TIME_OPENS in config_entry.data
-        ):
+        if CONF_TIME_CLOSES in subentry.data and CONF_TIME_OPENS in subentry.data:
             self._attr_supported_features |= CoverEntityFeature.SET_POSITION
-            self._time_closes = int(config_entry.data[CONF_TIME_CLOSES])
-            self._time_opens = int(config_entry.data[CONF_TIME_OPENS])
+            self._time_closes = int(subentry.data[CONF_TIME_CLOSES])
+            self._time_opens = int(subentry.data[CONF_TIME_OPENS])
 
-        if CONF_TIME_TILTS in config_entry.data:
+        if CONF_TIME_TILTS in subentry.data:
             self._attr_supported_features |= CoverEntityFeature.SET_TILT_POSITION
-            self._time_tilts = config_entry.data[CONF_TIME_TILTS]
+            self._time_tilts = subentry.data[CONF_TIME_TILTS]
 
     async def async_open_cover(self, **kwargs: Any) -> None:
         """Open the cover."""

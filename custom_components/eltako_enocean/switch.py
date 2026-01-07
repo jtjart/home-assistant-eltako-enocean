@@ -42,7 +42,7 @@ class EltakoStandardSwitch(EltakoEntity, SwitchEntity):
     ) -> None:
         """Initialize the Eltako switch device."""
         super().__init__(config_entry, subentry)
-        self._sender_id = AddressExpression.parse(config_entry.data[CONF_SENDER_ID])
+        self._sender_id = AddressExpression.parse(subentry.data[CONF_SENDER_ID])
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn on the switch."""
