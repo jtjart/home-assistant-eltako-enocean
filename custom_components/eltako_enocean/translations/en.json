@@ -118,6 +118,9 @@
     "cover": {},
     "light": {},
     "sensor": {
+      "battery_voltage": {
+        "name": "Battery Voltage"
+      },
       "gas_flow_rate": {
         "name": "Gas flow rate"
       },
