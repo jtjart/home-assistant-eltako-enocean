@@ -82,7 +82,7 @@ class EltakoDimmableLight(EltakoEntity, LightEntity):
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the light off."""
-        transition = int(kwargs.get(ATTR_TRANSITION, 0))
+        transition = min(int(kwargs.get(ATTR_TRANSITION, 0)), 255)
         address, _ = self._sender_id
 
         dimming = CentralCommandDimming(0, transition, 1, 0, 0, 0)
