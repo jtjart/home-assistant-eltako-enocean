@@ -89,7 +89,8 @@
         "invalid_id": "[%key:component::eltako_enocean::config::error::invalid_id%]"
       },
       "abort": {
-        "model_not_found": "Reconfiguration failed. The device model was not found."
+        "model_not_found": "Reconfiguration failed. The device model was not found.",
+        "reconfigure_successful": "Davice has been reconfigured successfully."
       }
     }
   },

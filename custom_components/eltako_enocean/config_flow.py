@@ -187,6 +187,9 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
 
     def _error_entries_match(self, user_input: dict[str, Any]):
         for subentry in self._get_entry().subentries.values():
+            if self.source == SOURCE_RECONFIGURE:
+                if subentry == self._get_reconfigure_subentry():
+                    continue
             if str(user_input[CONF_ID]).lower() == str(subentry.data[CONF_ID]).lower():
                 raise SchemaFlowError(CONF_ID, "already_configured")
 
@@ -271,7 +274,7 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
                 errors[e.args[0]] = e.args[1]
             else:
                 if self.source == SOURCE_RECONFIGURE:
-                    return self.async_update_reload_and_abort(
+                    return self.async_update_and_abort(
                         self._get_entry(),
                         self._get_reconfigure_subentry(),
                         data_updates=user_input,
