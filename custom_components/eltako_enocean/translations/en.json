@@ -90,7 +90,7 @@
       },
       "abort": {
         "model_not_found": "Reconfiguration failed. The device model was not found.",
-        "reconfigure_successful": "Davice has been reconfigured successfully."
+        "reconfigure_successful": "Device has been reconfigured successfully."
       }
     }
   },

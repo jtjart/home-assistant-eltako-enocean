@@ -38,7 +38,6 @@ from .device import (
     COVER_MODELS,
     GATEWAY_MODELS,
     LIGHT_MODELS,
-    MODELS,
     SENSOR_MODELS,
     SWITCH_MODELS,
     ModelDefinition,
@@ -117,7 +116,9 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
             else:
                 if self.source == SOURCE_RECONFIGURE:
                     return self.async_update_reload_and_abort(
-                        self._get_reconfigure_entry(), data_updates=user_input
+                        self._get_reconfigure_entry(),
+                        title=user_input[CONF_NAME],
+                        data_updates=user_input,
                     )
                 return self.async_create_entry(
                     title=user_input[CONF_NAME], data=user_input
@@ -277,6 +278,7 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
                     return self.async_update_and_abort(
                         self._get_entry(),
                         self._get_reconfigure_subentry(),
+                        title=user_input[CONF_NAME],
                         data_updates=user_input,
                     )
                 return self.async_create_entry(
