@@ -43,7 +43,7 @@ class EnOceanGateway:
     """
 
     address_subscriptions: dict[Any, list[MessageCallback]] = {}
-    general_subscriptions: list[Callable] = []
+    general_subscriptions: list[Callable[[], None]] = []
     connection_state_subscriptons: list[GwConnectionCallback] = []
 
     def __init__(self, config_entry: ConfigEntry) -> None:
@@ -70,7 +70,7 @@ class EnOceanGateway:
         # Return an "unsubscribe" function
         return lambda: self.address_subscriptions[address[0]].remove(callback)
 
-    def subscribe_message_received(self, callback: Callable):
+    def subscribe_message_received(self, callback: Callable[[], None]):
         """Register a callback for any message."""
         self.general_subscriptions.append(callback)
         # Return an "unsubscribe" function

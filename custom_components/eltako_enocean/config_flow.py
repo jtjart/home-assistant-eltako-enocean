@@ -135,7 +135,7 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
                 ),
             }
         )
-        suggested_values = {
+        suggested_values: dict[str, Any] = {
             CONF_NAME: "Eltako Gateway",
             CONF_ID: "00-00-B0-00",
             CONF_GATEWAY_AUTO_RECONNECT: True,

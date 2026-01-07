@@ -154,8 +154,9 @@ class EltakoElectricEnergySensor_A5_12_01(EltakoSensor):
             return  # Not commulative
 
         if self._tariff == decoded.measurement_channel:
-            calculatedValue = decoded.meter_reading / 10**decoded.divisor
-            self._attr_native_value = round(calculatedValue, 2)
+            self._attr_native_value = round(
+                decoded.meter_reading / 10**decoded.divisor, 2
+            )
             self.schedule_update_ha_state()
 
 
