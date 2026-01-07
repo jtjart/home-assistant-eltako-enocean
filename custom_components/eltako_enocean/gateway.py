@@ -64,21 +64,19 @@ class EnOceanGateway:
 
         self._init_bus()
 
-    async def async_register_address_callback(
-        self, address: AddressExpression, callback: MessageCallback
-    ):
+    def subscribe_address(self, address: AddressExpression, callback: MessageCallback):
         """Register a callback for a specific address."""
         self.address_subscriptions.setdefault(address[0], []).append(callback)
         # Return an "unsubscribe" function
         return lambda: self.address_subscriptions[address[0]].remove(callback)
 
-    def register_message_received_callback(self, callback: Callable):
+    def subscribe_message_received(self, callback: Callable):
         """Register a callback for any message."""
         self.general_subscriptions.append(callback)
         # Return an "unsubscribe" function
         return lambda: self.general_subscriptions.remove(callback)
 
-    def register_connection_state_callback(self, callback: GwConnectionCallback):
+    def susbcribe_connection_state(self, callback: GwConnectionCallback):
         """Register a callback for the gateway connection state."""
         self.connection_state_subscriptons.append(callback)
         callback(self._bus.is_active())

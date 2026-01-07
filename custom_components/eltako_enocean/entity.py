@@ -42,9 +42,7 @@ class EltakoEntity(Entity):
     async def async_added_to_hass(self) -> None:
         """Call when entity about to be added to hass. Register callback."""
         self.async_on_remove(
-            await self.gateway.async_register_address_callback(
-                self.dev_id, self.value_changed
-            )
+            self.gateway.subscribe_address(self.dev_id, self.value_changed)
         )
 
     @property
@@ -57,9 +55,9 @@ class EltakoEntity(Entity):
         """Return the id of the entity."""
         return self._attr_dev_id
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the device when a message arrives."""
-        raise NotImplementedError
+        raise NotImplementedError("value_changed needs to be implemented")
 
     async def async_send_message(self, msg: ESP2Message):
         """Put message on RS485 bus. First the message is put onto HA event bus so that other automations can react on messages."""

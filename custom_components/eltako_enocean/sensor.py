@@ -708,7 +708,7 @@ class GatewayLastReceivedMessage(SensorEntity):
     async def async_added_to_hass(self) -> None:
         """Call when entity about to be added to hass. Register callback."""
         self.async_on_remove(
-            self._attr_gateway.register_message_received_callback(self.update_to_now)
+            self._attr_gateway.subscribe_message_received(self.update_to_now)
         )
 
     def update_to_now(self) -> None:
@@ -739,7 +739,7 @@ class GatewayReceivedMessagesInActiveSession(SensorEntity):
     async def async_added_to_hass(self) -> None:
         """Call when entity about to be added to hass. Register callback."""
         self.async_on_remove(
-            self._attr_gateway.register_message_received_callback(self.count_up)
+            self._attr_gateway.subscribe_message_received(self.count_up)
         )
 
     def count_up(self) -> None:
