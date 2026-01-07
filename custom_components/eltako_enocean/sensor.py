@@ -71,7 +71,7 @@ class EltakoSensor(EltakoEntity, SensorEntity):
 
 
 class EltakoPirSensor_A5_07_01(EltakoSensor):
-    """Occupancy Sensor."""
+    """Occupancy Sensor (A5-07-01)."""
 
     entity_description = EltakoSensorEntityDescription(
         key="pir",
@@ -91,8 +91,8 @@ class EltakoVoltageSensor_A5_07_01(EltakoSensor):
 
     entity_description = EltakoSensorEntityDescription(
         key="voltage",
-        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
         device_class=SensorDeviceClass.VOLTAGE,
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
     )
@@ -109,8 +109,8 @@ class EltakoPowerSensor_A5_12_01(EltakoSensor):
 
     entity_description = EltakoSensorEntityDescription(
         key="power",
-        native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
         state_class=SensorStateClass.MEASUREMENT,
     )
 
@@ -137,8 +137,8 @@ class EltakoElectricEnergySensor_A5_12_01(EltakoSensor):
         """Initialize the Eltako electric energy sensor."""
         self.entity_description = EltakoSensorEntityDescription(
             key=f"electric_energy_{tariff}",
-            native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
             device_class=SensorDeviceClass.ENERGY,
+            native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
             state_class=SensorStateClass.TOTAL_INCREASING,
         )
         super().__init__(config_entry, subentry)
@@ -186,8 +186,8 @@ class EltakoGasFlowRateSensor_A5_12_02(EltakoSensor):
     entity_description = EltakoSensorEntityDescription(
         key="gas_flow_rate",
         translation_key="gas_flow_rate",
-        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_SECOND,
         device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
+        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_SECOND,
         state_class=SensorStateClass.MEASUREMENT,
     )
 
@@ -209,8 +209,8 @@ class EltakoGasMeterSensor_A5_12_02(EltakoSensor):
     entity_description = EltakoSensorEntityDescription(
         key="gas_meter",
         translation_key="gas_meter",
-        native_unit_of_measurement=UnitOfVolume.CUBIC_METERS,
         device_class=SensorDeviceClass.GAS,
+        native_unit_of_measurement=UnitOfVolume.CUBIC_METERS,
         state_class=SensorStateClass.TOTAL_INCREASING,
     )
 
@@ -235,8 +235,8 @@ class EltakoWaterFlowRateSensor_A5_12_03(EltakoSensor):
     entity_description = EltakoSensorEntityDescription(
         key="water_flow_rate",
         translation_key="water_flow_rate",
-        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_SECOND,
         device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
+        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_SECOND,
         state_class=SensorStateClass.MEASUREMENT,
     )
 
@@ -258,8 +258,8 @@ class EltakoWaterMeterSensor_A5_12_03(EltakoSensor):
     entity_description = EltakoSensorEntityDescription(
         key="water_meter",
         translation_key="water_meter",
-        native_unit_of_measurement=UnitOfVolume.CUBIC_METERS,
         device_class=SensorDeviceClass.WATER,
+        native_unit_of_measurement=UnitOfVolume.CUBIC_METERS,
         state_class=SensorStateClass.TOTAL_INCREASING,
     )
 
@@ -278,14 +278,14 @@ class EltakoWaterMeterSensor_A5_12_03(EltakoSensor):
         self.schedule_update_ha_state()
 
 
-class EltakoWeatherStationIlluminanceDawnSensor(EltakoSensor):
+class EltakoWeatherStationIlluminanceDawnSensor_A5_13_01(EltakoSensor):
     """Representation of an Eltako weather station illuminance dawn sensor (A5-13-01)."""
 
     entity_description = EltakoSensorEntityDescription(
         key="weather_station_illuminance_dawn",
         translation_key="weather_station_illuminance_dawn",
-        native_unit_of_measurement=LIGHT_LUX,
         device_class=SensorDeviceClass.ILLUMINANCE,
+        native_unit_of_measurement=LIGHT_LUX,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
     )
@@ -301,13 +301,13 @@ class EltakoWeatherStationIlluminanceDawnSensor(EltakoSensor):
         self.schedule_update_ha_state()
 
 
-class EltakoWeatherStationTemperatureSensor(EltakoSensor):
+class EltakoWeatherStationTemperatureSensor_A5_13_01(EltakoSensor):
     """Representation of an Eltako weather station temperature sensor (A5-13-01)."""
 
     entity_description = EltakoSensorEntityDescription(
         key="weather_station_temperature",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
     )
@@ -323,13 +323,13 @@ class EltakoWeatherStationTemperatureSensor(EltakoSensor):
         self.schedule_update_ha_state()
 
 
-class EltakoWeatherStationWindSpeedSensor(EltakoSensor):
+class EltakoWeatherStationWindSpeedSensor_A5_13_01(EltakoSensor):
     """Representation of an Eltako weather station wind speed sensor (A5-13-01)."""
 
     entity_description = EltakoSensorEntityDescription(
         key="weather_station_wind_speed",
-        native_unit_of_measurement=UnitOfSpeed.METERS_PER_SECOND,
         device_class=SensorDeviceClass.WIND_SPEED,
+        native_unit_of_measurement=UnitOfSpeed.METERS_PER_SECOND,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=2,
     )
@@ -345,14 +345,14 @@ class EltakoWeatherStationWindSpeedSensor(EltakoSensor):
         self.schedule_update_ha_state()
 
 
-class EltakoWeatherStationIlluminanceWestSensor(EltakoSensor):
+class EltakoWeatherStationIlluminanceWestSensor_A5_13_02(EltakoSensor):
     """Representation of an Eltako weather station illuminance west sensor (A5-13-02)."""
 
     entity_description = EltakoSensorEntityDescription(
         key="weather_station_illuminance_west",
         translation_key="weather_station_illuminance_west",
-        native_unit_of_measurement=LIGHT_LUX,
         device_class=SensorDeviceClass.ILLUMINANCE,
+        native_unit_of_measurement=LIGHT_LUX,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
     )
@@ -369,14 +369,14 @@ class EltakoWeatherStationIlluminanceWestSensor(EltakoSensor):
         self.schedule_update_ha_state()
 
 
-class EltakoWeatherStationIlluminanceCentralSensor(EltakoSensor):
+class EltakoWeatherStationIlluminanceCentralSensor_A5_13_02(EltakoSensor):
     """Representation of an Eltako weather station illuminance central sensor (A5-13-02)."""
 
     entity_description = EltakoSensorEntityDescription(
         key="weather_station_illuminance_central",
         translation_key="weather_station_illuminance_central",
-        native_unit_of_measurement=LIGHT_LUX,
         device_class=SensorDeviceClass.ILLUMINANCE,
+        native_unit_of_measurement=LIGHT_LUX,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
     )
@@ -393,14 +393,14 @@ class EltakoWeatherStationIlluminanceCentralSensor(EltakoSensor):
         self.schedule_update_ha_state()
 
 
-class EltakoWeatherStationIlluminanceEastSensor(EltakoSensor):
+class EltakoWeatherStationIlluminanceEastSensor_A5_13_02(EltakoSensor):
     """Representation of an Eltako weather station illuminance east sensor (A5-13-02)."""
 
     entity_description = EltakoSensorEntityDescription(
         key="weather_station_illuminance_east",
         translation_key="weather_station_illuminance_east",
-        native_unit_of_measurement=LIGHT_LUX,
         device_class=SensorDeviceClass.ILLUMINANCE,
+        native_unit_of_measurement=LIGHT_LUX,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
     )
@@ -419,8 +419,8 @@ class EltakoWeatherStationIlluminanceEastSensor(EltakoSensor):
 
 TEMPERATURE_DESCRIPTION = EltakoSensorEntityDescription(
     key="temperature",
-    native_unit_of_measurement=UnitOfTemperature.CELSIUS,
     device_class=SensorDeviceClass.TEMPERATURE,
+    native_unit_of_measurement=UnitOfTemperature.CELSIUS,
     state_class=SensorStateClass.MEASUREMENT,
     suggested_display_precision=1,
 )
@@ -512,8 +512,8 @@ class EltakoTemperatureSensor_A5_10_12(EltakoSensor):
 
 ILLUMNATION_DESCRIPTION = EltakoSensorEntityDescription(
     key="illuminance",
-    native_unit_of_measurement=LIGHT_LUX,
     device_class=SensorDeviceClass.ILLUMINANCE,
+    native_unit_of_measurement=LIGHT_LUX,
     state_class=SensorStateClass.MEASUREMENT,
     suggested_display_precision=0,
 )
@@ -548,10 +548,9 @@ class EltakoBatteryVoltageSensor_A5_08_01(EltakoSensor):
 
     entity_description = EltakoSensorEntityDescription(
         key="battery_voltage",
-        name="Battery Voltage",
+        translation_key="battery_voltage",
+        device_class=SensorDeviceClass.VOLTAGE,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
-        icon="mdi:lightning-bolt",
-        device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
     )
 
@@ -565,8 +564,8 @@ class EltakoBatteryVoltageSensor_A5_08_01(EltakoSensor):
 TARGET_TEMPERATURE_DESCRIPTION = EltakoSensorEntityDescription(
     key="target_temperature",
     translation_key="target_temperature",
-    native_unit_of_measurement=UnitOfTemperature.CELSIUS,
     device_class=SensorDeviceClass.TEMPERATURE,
+    native_unit_of_measurement=UnitOfTemperature.CELSIUS,
     state_class=SensorStateClass.MEASUREMENT,
     suggested_display_precision=1,
 )
@@ -610,8 +609,8 @@ class EltakoTargetTemperatureSensor_A5_10_12(EltakoSensor):
 
 HUMIDITY_DESCRIPTION = EltakoSensorEntityDescription(
     key="humidity",
-    native_unit_of_measurement=PERCENTAGE,
     device_class=SensorDeviceClass.HUMIDITY,
+    native_unit_of_measurement=PERCENTAGE,
     state_class=SensorStateClass.MEASUREMENT,
     suggested_display_precision=1,
 )
@@ -779,12 +778,12 @@ ENTITY_CLASS_MAP: dict[SensorEntities, type[EltakoEntity]] = {
     SensorEntities.A5_12_02_GAS_FLOW_RATE: EltakoGasFlowRateSensor_A5_12_02,
     SensorEntities.A5_12_03_WATER_METER: EltakoWaterMeterSensor_A5_12_03,
     SensorEntities.A5_12_03_WATER_FLOW_RATE: EltakoWaterFlowRateSensor_A5_12_03,
-    SensorEntities.A5_13_01_WEATHER_STATION_ILLUMINANCE_DAWN: EltakoWeatherStationIlluminanceDawnSensor,
-    SensorEntities.A5_13_01_WEATHER_STATION_TEMPERATURE: EltakoWeatherStationTemperatureSensor,
-    SensorEntities.A5_13_01_WEATHER_STATION_WIND_SPEED: EltakoWeatherStationWindSpeedSensor,
-    SensorEntities.A5_13_02_WEATHER_STATION_ILLUMINANCE_EAST: EltakoWeatherStationIlluminanceEastSensor,
-    SensorEntities.A5_13_02_WEATHER_STATION_ILLUMINANCE_CENTRAL: EltakoWeatherStationIlluminanceCentralSensor,
-    SensorEntities.A5_13_02_WEATHER_STATION_ILLUMINANCE_WEST: EltakoWeatherStationIlluminanceWestSensor,
+    SensorEntities.A5_13_01_WEATHER_STATION_ILLUMINANCE_DAWN: EltakoWeatherStationIlluminanceDawnSensor_A5_13_01,
+    SensorEntities.A5_13_01_WEATHER_STATION_TEMPERATURE: EltakoWeatherStationTemperatureSensor_A5_13_01,
+    SensorEntities.A5_13_01_WEATHER_STATION_WIND_SPEED: EltakoWeatherStationWindSpeedSensor_A5_13_01,
+    SensorEntities.A5_13_02_WEATHER_STATION_ILLUMINANCE_EAST: EltakoWeatherStationIlluminanceEastSensor_A5_13_02,
+    SensorEntities.A5_13_02_WEATHER_STATION_ILLUMINANCE_CENTRAL: EltakoWeatherStationIlluminanceCentralSensor_A5_13_02,
+    SensorEntities.A5_13_02_WEATHER_STATION_ILLUMINANCE_WEST: EltakoWeatherStationIlluminanceWestSensor_A5_13_02,
 }
 
 
