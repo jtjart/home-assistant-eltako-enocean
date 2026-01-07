@@ -177,8 +177,8 @@ class DeviceTypeConfig:
 
     step_name: str
     models: Mapping[str, ModelDefinition]
-    extra_schema: dict
-    extra_validate: Callable[[dict], None]
+    extra_schema: dict[vol.Marker, Any]
+    extra_validate: Callable[[dict[str, Any]], None]
 
 
 class DeviceSubentryFlowHandler(ConfigSubentryFlow):
