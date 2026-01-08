@@ -8,7 +8,11 @@ from eltakobus.eep import A5_38_08, F6_02_01, M5_38_08, CentralCommandSwitching
 from eltakobus.message import ESP2Message
 from eltakobus.util import AddressExpression
 
-from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
+from homeassistant.components.switch import (
+    SwitchDeviceClass,
+    SwitchEntity,
+    SwitchEntityDescription,
+)
 from homeassistant.config_entries import ConfigSubentry
 from homeassistant.const import CONF_MODEL
 from homeassistant.core import HomeAssistant
@@ -30,6 +34,7 @@ class EltakoSwitchEntityDescription(SwitchEntityDescription):
     key: str = ""
     has_entity_name: bool = True
     name: str | UndefinedType | None = None
+    device_class: SwitchDeviceClass | None = SwitchDeviceClass.OUTLET
 
 
 class EltakoStandardSwitch(EltakoEntity, SwitchEntity):
