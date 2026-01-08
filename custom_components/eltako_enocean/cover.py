@@ -173,9 +173,6 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
 
         tilt_position = int(kwargs[ATTR_TILT_POSITION])
         tilt_diff = tilt_position - self._attr_current_cover_tilt_position
-        _LOGGER.debug("tilt_position: %s", tilt_position)
-        _LOGGER.debug("self.tilt_position: %s", self._attr_current_cover_tilt_position)
-        _LOGGER.debug("tilt-diff: %s", tilt_diff)
 
         if tilt_diff > 0:
             direction = DIRECTION_UP
