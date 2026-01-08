@@ -12,6 +12,7 @@ from eltakobus.util import AddressExpression
 from homeassistant.components.cover import (
     ATTR_POSITION,
     ATTR_TILT_POSITION,
+    CoverDeviceClass,
     CoverEntity,
     CoverEntityDescription,
     CoverEntityFeature,
@@ -45,13 +46,10 @@ class EltakoCoverEntityDescription(CoverEntityDescription):
 class EltakoStandardCover(EltakoEntity, CoverEntity):
     """Representation of an Eltako cover device."""
 
-    entity_description = EltakoCoverEntityDescription()
-
     def __init__(
         self, config_entry: EltakoConfigEntry, subentry: ConfigSubentry
     ) -> None:
         """Initialize the Eltako cover device."""
-        super().__init__(config_entry, subentry)
         self._sender_id = AddressExpression.parse(subentry.data[CONF_SENDER_ID])
         self._time_closes: int | None = None
         self._time_opens: int | None = None
@@ -71,6 +69,14 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
         if CONF_TIME_TILTS in subentry.data:
             self._attr_supported_features |= CoverEntityFeature.SET_TILT_POSITION
             self._time_tilts = float(subentry.data[CONF_TIME_TILTS])
+            self.entity_description = EltakoCoverEntityDescription(
+                device_class=CoverDeviceClass.BLIND
+            )
+        else:
+            self.entity_description = EltakoCoverEntityDescription(
+                device_class=CoverDeviceClass.SHUTTER
+            )
+        super().__init__(config_entry, subentry)
 
     async def async_open_cover(self, **kwargs: Any) -> None:
         """Open the cover."""
