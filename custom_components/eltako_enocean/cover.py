@@ -53,15 +53,11 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
         """Initialize the Eltako cover device."""
         super().__init__(config_entry, subentry)
         self._sender_id = AddressExpression.parse(subentry.data[CONF_SENDER_ID])
+        self._time_closes: int | None = None
+        self._time_opens: int | None = None
+        self._time_tilts: float | None = None
 
-        self._attr_is_opening = False
-        self._attr_is_closing = False
         self._attr_is_closed = None  # means undefined state
-        self._attr_current_cover_position = None
-        self._attr_current_cover_tilt_position = None
-        self._time_closes = None
-        self._time_opens = None
-        self._time_tilts = None
 
         self._attr_supported_features = (
             CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE | CoverEntityFeature.STOP
@@ -74,7 +70,7 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
 
         if CONF_TIME_TILTS in subentry.data:
             self._attr_supported_features |= CoverEntityFeature.SET_TILT_POSITION
-            self._time_tilts = subentry.data[CONF_TIME_TILTS]
+            self._time_tilts = float(subentry.data[CONF_TIME_TILTS])
 
     async def async_open_cover(self, **kwargs: Any) -> None:
         """Open the cover."""
@@ -100,10 +96,9 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
         else:
             moving_time = 255
 
-        address, _ = self._sender_id
-
-        msg = H5_3F_7F(moving_time, 0x02, 1).encode_message(address)
-        await self.async_send_message(msg)
+        await self.async_send_message(
+            H5_3F_7F(moving_time, 0x02, 1).encode_message(self._sender_id[0])
+        )
 
         if self.gateway.fast_status_change:
             self._attr_is_closing = True
@@ -113,14 +108,15 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:
         """Move the cover to a specific position."""
-        if self._time_closes is None or self._time_opens is None:
-            return
-
-        address, _ = self._sender_id
         position = kwargs[ATTR_POSITION]
 
+        if self._time_closes is None or self._time_opens is None:
+            return
+        if self._attr_current_cover_position is None:
+            return
         if position == self._attr_current_cover_position:
             return
+
         if position == 100:
             direction = DIRECTION_UP
             moving_time = self._time_opens + 1
@@ -144,8 +140,9 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
 
         command = 0x01 if direction == DIRECTION_UP else 0x02
         moving_time = max(1, min(moving_time, 255))
-        msg = H5_3F_7F(moving_time, command, 1).encode_message(address)
-        await self.async_send_message(msg)
+        await self.async_send_message(
+            H5_3F_7F(moving_time, command, 1).encode_message(self._sender_id[0])
+        )
 
         if self.gateway.fast_status_change:
             if direction == DIRECTION_UP:
@@ -158,10 +155,9 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
 
     async def async_stop_cover(self, **kwargs: Any) -> None:
         """Stop the cover."""
-        address, _ = self._sender_id
-
-        msg = H5_3F_7F(0, 0x00, 1).encode_message(address)
-        await self.async_send_message(msg)
+        await self.async_send_message(
+            H5_3F_7F(0, 0x00, 1).encode_message(self._sender_id[0])
+        )
 
         if self.gateway.fast_status_change:
             self._attr_is_closing = False
@@ -170,9 +166,16 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
 
     async def async_set_cover_tilt_position(self, **kwargs: Any) -> None:
         """Move the cover tilt to a specific position."""
-        address, _ = self._sender_id
-        tilt_position = kwargs[ATTR_TILT_POSITION]
+        if self._time_tilts is None:
+            return
+        if self._attr_current_cover_tilt_position is None:
+            return
+
+        tilt_position = int(kwargs[ATTR_TILT_POSITION])
         tilt_diff = tilt_position - self._attr_current_cover_tilt_position
+        _LOGGER.debug("tilt_position: %s", tilt_position)
+        _LOGGER.debug("self.tilt_position: %s", self._attr_current_cover_tilt_position)
+        _LOGGER.debug("tilt-diff: %s", tilt_diff)
 
         if tilt_diff > 0:
             direction = DIRECTION_UP
@@ -182,6 +185,7 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
             return
         sleeptime = abs(tilt_diff) / 100.0 * self._time_tilts
 
+        address = self._sender_id[0]
         command = 0x01 if direction == DIRECTION_UP else 0x02  # up or down
         msg = H5_3F_7F(0, command, 1).encode_message(address)
         await self.async_send_message(msg)
@@ -193,73 +197,74 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
         """Update the internal state of the cover."""
         decoded = G5_3F_7F.decode_message(msg)
 
-        if decoded.state == 0x02:  # down
-            self._attr_is_closing = True
-            self._attr_is_opening = False
-            self._attr_is_closed = False
-        elif decoded.state == 0x50:  # closed
-            self._attr_is_opening = False
-            self._attr_is_closing = False
-            self._attr_is_closed = True
-            self._attr_current_cover_position = 0
-            self._attr_current_cover_tilt_position = 0
-        elif decoded.state == 0x01:  # up
-            self._attr_is_opening = True
-            self._attr_is_closing = False
-            self._attr_is_closed = False
-        elif decoded.state == 0x70:  # open
-            self._attr_is_opening = False
-            self._attr_is_closing = False
-            self._attr_is_closed = False
-            self._attr_current_cover_position = 100
-            self._attr_current_cover_tilt_position = 100
+        if msg.org == 0x05:
+            match decoded.state:
+                case 0x02:  # down
+                    self._attr_is_closing = True
+                    self._attr_is_opening = False
+                    self._attr_is_closed = False
+                case 0x50:  # closed
+                    self._attr_is_opening = False
+                    self._attr_is_closing = False
+                    self._attr_is_closed = True
+                    self._attr_current_cover_position = 0
+                    self._attr_current_cover_tilt_position = 0
+                case 0x01:  # up
+                    self._attr_is_opening = True
+                    self._attr_is_closing = False
+                    self._attr_is_closed = False
+                case 0x70:  # open
+                    self._attr_is_opening = False
+                    self._attr_is_closing = False
+                    self._attr_is_closed = False
+                    self._attr_current_cover_position = 100
+                    self._attr_current_cover_tilt_position = 100
 
-        # is received when cover stops at the desired intermediate position
-        elif (
-            decoded.time is not None
-            and decoded.direction is not None
-            and self._time_closes is not None
-            and self._time_opens is not None
-        ):
-            time_in_seconds = decoded.time / 10.0
+        elif msg.org == 0x07:
+            if decoded.time is None:
+                return
+            time_in_seconds = int(decoded.time) / 10.0
+            self._attr_is_opening = False
+            self._attr_is_closing = False
 
             if decoded.direction == 0x01:  # up
-                # In case initial state is unknown, we have to guess
-                if self._attr_current_cover_position is None:
-                    self._attr_current_cover_position = 0
-
-                self._attr_current_cover_position = min(
-                    self._attr_current_cover_position
-                    + int(time_in_seconds / self._time_opens * 100.0),
-                    100,
-                )
-                if self._time_tilts and self._attr_current_cover_tilt_position:
-                    self._attr_current_cover_tilt_position = min(
-                        self._attr_current_cover_tilt_position
-                        + int(time_in_seconds / self._time_tilts * 100.0),
+                self._attr_is_closed = False
+                if self._time_opens:
+                    if self._attr_current_cover_position is None:
+                        self._attr_current_cover_position = 0  # guessing
+                    self._attr_current_cover_position = min(
+                        self._attr_current_cover_position
+                        + int(time_in_seconds / self._time_opens * 100.0),
                         100,
                     )
+                    if self._time_tilts:
+                        if self._attr_current_cover_tilt_position is None:
+                            self._attr_current_cover_tilt_position = 0  # guessing
+                        self._attr_current_cover_tilt_position = min(
+                            self._attr_current_cover_tilt_position
+                            + int(time_in_seconds / self._time_tilts * 100.0),
+                            100,
+                        )
 
             else:  # down
-                # In case initial state is unknown, we have to guess
-                if self._attr_current_cover_position is None:
-                    self._attr_current_cover_position = 100
-
-                self._attr_current_cover_position = max(
-                    self._attr_current_cover_position
-                    - int(time_in_seconds / self._time_closes * 100.0),
-                    0,
-                )
-                if self._time_tilts and self._attr_current_cover_tilt_position:
-                    self._attr_current_cover_tilt_position = max(
-                        self._attr_current_cover_tilt_position
-                        - int(time_in_seconds / self._time_tilts * 100.0),
+                self._attr_is_closed = True
+                if self._time_closes:
+                    if self._attr_current_cover_position is None:
+                        self._attr_current_cover_position = 100  # guessing
+                    self._attr_current_cover_position = max(
+                        self._attr_current_cover_position
+                        - int(time_in_seconds / self._time_closes * 100.0),
                         0,
                     )
-
-            self._attr_is_closed = self._attr_current_cover_position == 0
-            self._attr_is_opening = False
-            self._attr_is_closing = False
+                    if self._time_tilts:
+                        if self._attr_current_cover_tilt_position is None:
+                            self._attr_current_cover_tilt_position = 100  # guessing
+                        self._attr_current_cover_tilt_position = max(
+                            self._attr_current_cover_tilt_position
+                            - int(time_in_seconds / self._time_tilts * 100.0),
+                            0,
+                        )
+                    self._attr_is_closed = self._attr_current_cover_position == 0
 
         self.schedule_update_ha_state()
 
