@@ -1,31 +1,16 @@
-"""Constants for the Eltako Enocean integration."""
+"""Constants for the Eltako (EnOcean) integration."""
 
-from typing import Final
+DOMAIN = "eltako_enocean"
+MANUFACTURER = "Eltako"
 
-from homeassistant.const import Platform
+CONF_FAST_STATUS_CHANGE = "fast_status_change"
+CONF_GATEWAY_AUTO_RECONNECT = "auto_reconnect"
+CONF_GATEWAY_MESSAGE_DELAY = "message_delay"
+CONF_INVERT_SIGNAL = "invert_signal"
+CONF_SENDER_ID = "sender_id"
+CONF_SERIAL_PORT = "serial_port"
+CONF_TIME_CLOSES = "time_closes"
+CONF_TIME_OPENS = "time_opens"
+CONF_TIME_TILTS = "time_tilts"
 
-DOMAIN: Final = "eltako_enocean"
-MANUFACTURER: Final = "Eltako"
-
-CONF_FAST_STATUS_CHANGE: Final = "fast_status_change"
-CONF_GATEWAY_AUTO_RECONNECT: Final = "auto_reconnect"
-CONF_GATEWAY_MESSAGE_DELAY: Final = "message_delay"
-CONF_INVERT_SIGNAL: Final = "invert_signal"
-CONF_SENDER_ID: Final = "sender_id"
-CONF_SERIAL_PORT: Final = "serial_port"
-CONF_TIME_CLOSES: Final = "time_closes"
-CONF_TIME_OPENS: Final = "time_opens"
-CONF_TIME_TILTS: Final = "time_tilts"
-
-ID_REGEX: Final = (
-    r"^([0-9a-fA-F]{2})-([0-9a-fA-F]{2})-([0-9a-fA-F]{2})-([0-9a-fA-F]{2})$"
-)
-
-PLATFORMS: Final = [
-    Platform.BINARY_SENSOR,
-    Platform.BUTTON,
-    Platform.COVER,
-    Platform.LIGHT,
-    Platform.SENSOR,
-    Platform.SWITCH,
-]
+ID_REGEX = r"^([0-9a-fA-F]{2})-([0-9a-fA-F]{2})-([0-9a-fA-F]{2})-([0-9a-fA-F]{2})$"

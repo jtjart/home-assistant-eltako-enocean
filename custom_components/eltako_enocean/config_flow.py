@@ -42,6 +42,7 @@ from .device import (
     SWITCH_MODELS,
     ModelDefinition,
 )
+from .gateway import EnOceanGateway
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,11 +51,14 @@ def _validate_enocean_id(user_input: dict[str, Any], key: str):
     try:
         cv.matches_regex(ID_REGEX)(user_input[key])
     except vol.Invalid as e:
-        raise SchemaFlowError(key, "invalid_id") from e
+        raise InvalidIdFormat from e
 
 
 def _validate_sender(user_input: dict[str, Any]):
-    _validate_enocean_id(user_input, CONF_SENDER_ID)
+    try:
+        _validate_enocean_id(user_input, CONF_SENDER_ID)
+    except InvalidIdFormat as e:
+        raise InvalidSenderIdFormat from e
 
 
 def _validate_cover(user_input: dict[str, Any]):
@@ -63,7 +67,7 @@ def _validate_cover(user_input: dict[str, Any]):
     has_closes = CONF_TIME_CLOSES in user_input
     has_opens = CONF_TIME_OPENS in user_input
     if has_closes != has_opens:
-        raise SchemaFlowError(CONF_TIME_OPENS, "invalid_cover_time")
+        raise InvalidCoverTimes
 
 
 def _validate_none(_: Any):
@@ -78,9 +82,21 @@ def _validate_gateway_path(user_input: dict[str, Any]):
 
     try:
         serial.serial_for_url(serial_path, gw_model.baud_rate, timeout=0.1)
-    except serial.SerialException as exception:
-        _LOGGER.warning("Gateway path %s is invalid: %s", serial_path, str(exception))
-        raise SchemaFlowError(CONF_SERIAL_PORT, "invalid_gateway_path") from exception
+    except serial.SerialException as e:
+        raise InvalidGatewayPath from e
+
+
+async def _async_validate_gateway(user_input: dict[str, Any]):
+    """Return True if the gateway can be accessed."""
+    gateway = EnOceanGateway(
+        GATEWAY_MODELS[user_input[CONF_MODEL]],
+        user_input[CONF_SERIAL_PORT],
+        user_input[CONF_GATEWAY_AUTO_RECONNECT],
+        user_input[CONF_GATEWAY_MESSAGE_DELAY],
+        user_input[CONF_FAST_STATUS_CHANGE],
+    )
+    await gateway.async_setup()
+    gateway.unload()
 
 
 def _get_model_options(models: Mapping[str, ModelDefinition]):
@@ -91,7 +107,7 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
     """Handle the Eltako config flows."""
 
     VERSION = 1
-    MINOR_VERSION = 1
+    MINOR_VERSION = 0
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -102,7 +118,7 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
         ports = await self.hass.async_add_executor_job(serial.tools.list_ports.comports)
         serial_ports = {p.device: f"{p.description} ({p.device})" for p in ports}
         if not serial_ports:
-            errors[CONF_SERIAL_PORT] = "no_serial_ports"
+            return self.async_abort(reason="no_serial_ports")
 
         if user_input is not None:
             self._async_abort_entries_match(
@@ -111,8 +127,16 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
             try:
                 _validate_enocean_id(user_input, CONF_ID)
                 _validate_gateway_path(user_input)
-            except SchemaFlowError as e:
-                errors[e.args[0]] = e.args[1]
+                await _async_validate_gateway(user_input)
+            except InvalidIdFormat:
+                errors[CONF_ID] = "invalid_id"
+            except InvalidGatewayPath:
+                errors[CONF_SERIAL_PORT] = "invalid_gateway_path"
+            except RuntimeError:
+                errors[CONF_SERIAL_PORT] = "cannot_connect"
+            except Exception:
+                _LOGGER.exception("Unexpected exception: %s")
+                errors["base"] = "unknown"
             else:
                 if self.source == SOURCE_RECONFIGURE:
                     return self.async_update_reload_and_abort(
@@ -160,7 +184,9 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=data_schema, errors=errors, last_step=True
         )
 
-    async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None):
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Reconfigure an Eltako Gateway."""
         return await self.async_step_user(user_input)
 
@@ -175,7 +201,7 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
 
 @dataclass(frozen=True)
 class DeviceTypeConfig:
-    """A class to configure the differet Eltako device types, that can be set up."""
+    """A class to configure the different Eltako device types, that can be set up."""
 
     step_name: str
     models: Mapping[str, ModelDefinition]
@@ -192,7 +218,7 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
                 if subentry == self._get_reconfigure_subentry():
                     continue
             if str(user_input[CONF_ID]).lower() == str(subentry.data[CONF_ID]).lower():
-                raise SchemaFlowError(CONF_ID, "already_configured")
+                raise AlreadyConfigured
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -271,8 +297,14 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
                 self._error_entries_match(user_input)
                 _validate_enocean_id(user_input, CONF_ID)
                 device_type_config.extra_validate(user_input)
-            except SchemaFlowError as e:
-                errors[e.args[0]] = e.args[1]
+            except InvalidSenderIdFormat:
+                errors[CONF_SENDER_ID] = "invalid_id"
+            except InvalidIdFormat:
+                errors[CONF_ID] = "invalid_id"
+            except AlreadyConfigured:
+                errors[CONF_ID] = "already_configured"
+            except InvalidCoverTimes:
+                errors[CONF_TIME_OPENS] = "invalid_cover_time"
             else:
                 if self.source == SOURCE_RECONFIGURE:
                     return self.async_update_and_abort(
@@ -332,3 +364,23 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
         if model_key in SWITCH_MODELS:
             return await self.async_step_switch()
         return self.async_abort(reason="model_not_found")
+
+
+class InvalidGatewayPath(SchemaFlowError):
+    """Error to indicate there is invalid gateway path."""
+
+
+class AlreadyConfigured(SchemaFlowError):
+    """Error to indicate that this device has already been configured."""
+
+
+class InvalidIdFormat(SchemaFlowError):
+    """Error to indicate that the ID has an invalid format."""
+
+
+class InvalidSenderIdFormat(InvalidIdFormat):
+    """Error to indicate that the sender ID has an invalid format."""
+
+
+class InvalidCoverTimes(SchemaFlowError):
+    """Error to indicate the the configured times for the cover are not valid."""

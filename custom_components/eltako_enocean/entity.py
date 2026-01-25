@@ -7,7 +7,8 @@ from eltakobus.util import AddressExpression
 
 from homeassistant.config_entries import ConfigSubentry
 from homeassistant.const import CONF_ID
-from homeassistant.helpers.entity import DeviceInfo, Entity
+from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity import Entity
 
 from . import EltakoConfigEntry
 from .const import DOMAIN

@@ -5,7 +5,7 @@ from enum import Enum, auto
 
 
 class BinarySensorEntities(Enum):
-    """Representation of the different Eltako binary sensor enitity types."""
+    """Representation of the different Eltako binary sensor entity types."""
 
     A5_07_01_OCCUPANCY = auto()
     A5_08_01_OCCUPANCY = auto()
@@ -23,17 +23,17 @@ class BinarySensorEntities(Enum):
 
 
 class ButtonEntities(Enum):
-    """Representation of the different Eltako button enitity types."""
+    """Representation of the different Eltako button entity types."""
 
 
 class CoverEntities(Enum):
-    """Representation of the different Eltako cover enitity types."""
+    """Representation of the different Eltako cover entity types."""
 
     STANDARD = auto()
 
 
 class LightEntities(Enum):
-    """Representation of the different Eltako light enitity types."""
+    """Representation of the different Eltako light entity types."""
 
     DIMMABLE = auto()
     SWITCHABLE = auto()
@@ -41,7 +41,7 @@ class LightEntities(Enum):
 
 
 class SensorEntities(Enum):
-    """Representation of the different Eltako sensor enitity types."""
+    """Representation of the different Eltako sensor entity types."""
 
     A5_04_01_TEMPERATURE = auto()
     A5_04_01_HUMIDITY = auto()
@@ -79,7 +79,7 @@ class SensorEntities(Enum):
 
 
 class SwitchEntities(Enum):
-    """Representation of the different Eltako switch enitity types."""
+    """Representation of the different Eltako switch entity types."""
 
     STANDARD = auto()
     DUMB = auto()
@@ -110,9 +110,9 @@ class GatewayModelDefinition(ModelDefinition):
 
 GATEWAY_MODELS: dict[str, GatewayModelDefinition] = {
     "FAM14": GatewayModelDefinition("FAM14"),
-    "FGW14USB": GatewayModelDefinition("FGW14USB"),
-    "FAMUSB": GatewayModelDefinition("FAMUSB", baud_rate=9600),
-    "USB300": GatewayModelDefinition("USB300", is_bus_gw=False),
+    "FGW14_USB": GatewayModelDefinition("FGW14USB"),
+    "FAM_USB": GatewayModelDefinition("FAMUSB", baud_rate=9600),
+    "USB_300": GatewayModelDefinition("USB 300", is_bus_gw=False),
     "ESP3": GatewayModelDefinition("ESP3 Gateway", is_bus_gw=False),
 }
 

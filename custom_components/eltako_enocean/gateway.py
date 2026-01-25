@@ -18,16 +18,7 @@ from eltakobus.message import (
 from eltakobus.serial import RS485SerialInterfaceV2
 from eltakobus.util import AddressExpression
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_ID, CONF_MODEL, CONF_NAME
-
-from .const import (
-    CONF_FAST_STATUS_CHANGE,
-    CONF_GATEWAY_AUTO_RECONNECT,
-    CONF_GATEWAY_MESSAGE_DELAY,
-    CONF_SERIAL_PORT,
-)
-from .device import GATEWAY_MODELS
+from .device import GatewayModelDefinition
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,21 +37,23 @@ class EnOceanGateway:
     general_subscriptions: list[Callable[[], None]] = []
     connection_state_subscriptons: list[GwConnectionCallback] = []
 
-    def __init__(self, config_entry: ConfigEntry) -> None:
+    def __init__(
+        self,
+        device_model: GatewayModelDefinition,
+        serial_port: str,
+        auto_reconnect_enabled: bool,
+        message_delay: float,
+        fast_status_change: bool,
+    ) -> None:
         """Initialize the Eltako gateway."""
-        self._attr_dev_name = config_entry.data[CONF_NAME]
 
-        _LOGGER.info("Initializes Gateway Device '%s'", self._attr_dev_name)
+        _LOGGER.debug("Initialize a gateway device")
 
-        self._device_model = GATEWAY_MODELS[config_entry.data[CONF_MODEL]]
-        self._serial_port = str(config_entry.data[CONF_SERIAL_PORT])
-        self._base_id = AddressExpression.parse(config_entry.data[CONF_ID])
-        self._auto_reconnect_enabled = bool(
-            config_entry.data[CONF_GATEWAY_AUTO_RECONNECT]
-        )
-        self._message_delay = float(config_entry.data[CONF_GATEWAY_MESSAGE_DELAY])
-        self._fast_status_change = bool(config_entry.data[CONF_FAST_STATUS_CHANGE])
-        self._baud_rate = self._device_model.baud_rate
+        self._device_model = device_model
+        self._serial_port = serial_port
+        self._auto_reconnect_enabled = auto_reconnect_enabled
+        self._message_delay = message_delay
+        self._fast_status_change = fast_status_change
 
         self._init_bus()
 
@@ -91,7 +84,7 @@ class EnOceanGateway:
         if self._device_model.is_bus_gw:
             self._bus = RS485SerialInterfaceV2(
                 self._serial_port,
-                baud_rate=self._baud_rate,
+                baud_rate=self._device_model.baud_rate,
                 callback=self._callback_receive_message_from_serial_bus,
                 delay_message=self._message_delay,
                 auto_reconnect=self._auto_reconnect_enabled,
@@ -117,7 +110,7 @@ class EnOceanGateway:
         self._bus.start()
 
     async def async_setup(self):
-        """Initialized serial bus and register callback function on HA event bus."""
+        """Initialize serial bus."""
         self._bus.start()
         _LOGGER.debug("%s was started", self._serial_port)
 
@@ -144,8 +137,8 @@ class EnOceanGateway:
             return
 
         _LOGGER.debug("[%s] Received message: %s", self._serial_port, msg)
-        for callback in self.general_subscriptions:
-            callback()
+        for general_callback in self.general_subscriptions:
+            general_callback()
 
         msg_classes = (
             EltakoWrappedRPS,
@@ -157,9 +150,9 @@ class EnOceanGateway:
         )
 
         if isinstance(msg, msg_classes) and msg.address in self.address_subscriptions:
-            for callback in self.address_subscriptions[msg.address]:
+            for address_callback in self.address_subscriptions[msg.address]:
                 try:
-                    callback(msg)
+                    address_callback(msg)
                 except WrongOrgError:
                     _LOGGER.warning("Could not decode message: %s", msg)
 
