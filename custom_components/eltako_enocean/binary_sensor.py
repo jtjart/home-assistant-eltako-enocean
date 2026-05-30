@@ -291,7 +291,7 @@ class GatewayConnectionState(BinarySensorEntity):
     async def async_added_to_hass(self) -> None:
         """Call when entity about to be added to hass. Register callback."""
         self.async_on_remove(
-            self._attr_gateway.susbcribe_connection_state(self.state_changed)
+            self._attr_gateway.subscribe_connection_state(self.state_changed)
         )
 
     def state_changed(self, state: bool) -> None:
