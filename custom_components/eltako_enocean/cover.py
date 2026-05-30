@@ -286,10 +286,10 @@ async def async_setup_entry(
 
     # Add devices' entities
     for subentry_id, subentry in config_entry.subentries.items():
-        subentry_entities: list[EltakoEntity] = []
         device_model = MODELS[subentry.data[CONF_MODEL]]
-        for entity_type in device_model.covers:
-            sensor_class = ENTITY_CLASS_MAP.get(entity_type)
-            if sensor_class:
-                subentry_entities.append(sensor_class(config_entry, subentry))
+        subentry_entities = [
+            ENTITY_CLASS_MAP[entity_type](config_entry, subentry)
+            for entity_type in device_model.covers
+            if ENTITY_CLASS_MAP.get(entity_type)
+        ]
         async_add_entities(subentry_entities, config_subentry_id=subentry_id)
