@@ -9,6 +9,11 @@ import serial
 import serial.tools.list_ports
 import voluptuous as vol
 
+from homeassistant.components.usb import (
+    SerialDevice,
+    USBDevice,
+    async_scan_serial_ports,
+)
 from homeassistant.config_entries import (
     SOURCE_RECONFIGURE,
     ConfigEntry,
@@ -101,14 +106,8 @@ class EltakoFlowHandler(ConfigFlow, domain=DOMAIN):
         """Configure an Eltako Gateway."""
         errors: dict[str, str] = {}
 
-        try:
-            ports = await self.hass.async_add_executor_job(
-                serial.tools.list_ports.comports
-            )
-        except OSError:
-            _LOGGER.exception("Failed listing serial ports")
-            return self.async_abort(reason="cannot_list_serial_ports")
-        serial_ports = {p.device: f"{p.description} ({p.device})" for p in ports}
+        ports: list[USBDevice | SerialDevice] = await async_scan_serial_ports(self.hass)
+        serial_ports = {p.device: f"{p.description}" for p in ports}
         if not serial_ports:
             return self.async_abort(reason="no_serial_ports")
 
