@@ -196,7 +196,7 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
         msg = H5_3F_7F(0, 0x00, 1).encode_message(address)
         await self.async_send_message(msg)
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the cover."""
         decoded = G5_3F_7F.decode_message(msg)
 

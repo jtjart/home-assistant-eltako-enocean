@@ -54,7 +54,7 @@ class EltakoOccupancySensor(EltakoEntity, BinarySensorEntity):
 class EltakoOccupancySensor_A5_07_01(EltakoOccupancySensor):
     """Representation of an Eltako occupancy sensor (A5-07-01)."""
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_07_01.decode_message(msg)
         if decoded.learn_button == 0:
@@ -66,7 +66,7 @@ class EltakoOccupancySensor_A5_07_01(EltakoOccupancySensor):
 class EltakoOccupancySensor_A5_08_01(EltakoOccupancySensor):
     """Representation of an Eltako occupancy sensor (A5-08-01)."""
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_08_01.decode_message(msg)
         if decoded.learn_button == 0:
@@ -82,7 +82,7 @@ class EltakoContactSensor_A5_30_01(EltakoEntity, BinarySensorEntity):
         key="contact", translation_key="contact"
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
 
         decoded = A5_30_01.decode_message(msg)
@@ -99,7 +99,7 @@ class EltakoContactSensor_D5_00_01(EltakoEntity, BinarySensorEntity):
         key="contact", translation_key="contact"
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = D5_00_01.decode_message(msg)
         if decoded.learn_button == 0:
@@ -116,7 +116,7 @@ class EltakoLowBatterySensor_A5_30_01(EltakoEntity, BinarySensorEntity):
         device_class=BinarySensorDeviceClass.BATTERY,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
 
         decoded = A5_30_01.decode_message(msg)
@@ -135,7 +135,7 @@ class EltakoDigitalInputSensor_0_A5_30_03(EltakoEntity, BinarySensorEntity):
         translation_placeholders={"index": "0"},
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
 
         decoded = A5_30_03.decode_message(msg)
@@ -154,7 +154,7 @@ class EltakoDigitalInputSensor_1_A5_30_03(EltakoEntity, BinarySensorEntity):
         translation_placeholders={"index": "1"},
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
 
         decoded = A5_30_03.decode_message(msg)
@@ -173,7 +173,7 @@ class EltakoDigitalInputSensor_2_A5_30_03(EltakoEntity, BinarySensorEntity):
         translation_placeholders={"index": "2"},
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
 
         decoded = A5_30_03.decode_message(msg)
@@ -192,7 +192,7 @@ class EltakoDigitalInputSensor_3_A5_30_03(EltakoEntity, BinarySensorEntity):
         translation_placeholders={"index": "3"},
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
 
         decoded = A5_30_03.decode_message(msg)
@@ -209,7 +209,7 @@ class EltakoWakeSensor_A5_30_03(EltakoEntity, BinarySensorEntity):
         key="status_of_wake", translation_key="status_of_wake"
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
 
         decoded = A5_30_03.decode_message(msg)
@@ -226,7 +226,7 @@ class EltakoWindowSensor_F6_10_00(EltakoEntity, BinarySensorEntity):
         key="window", device_class=BinarySensorDeviceClass.WINDOW
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
 
         decoded = F6_10_00.decode_message(msg)
@@ -243,7 +243,7 @@ class EltakoWindowTiltSensor_F6_10_00(EltakoEntity, BinarySensorEntity):
         device_class=BinarySensorDeviceClass.WINDOW,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
 
         decoded = F6_10_00.decode_message(msg)
@@ -260,7 +260,7 @@ class EltakoWeatherStationRainSensor(EltakoEntity, BinarySensorEntity):
         device_class=BinarySensorDeviceClass.MOISTURE,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_13_01.decode_message(msg)
         if decoded.learn_button != 1:

@@ -79,7 +79,7 @@ class EltakoPirSensor_A5_07_01(EltakoSensor):
         state_class=SensorStateClass.MEASUREMENT,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_07_01.decode_message(msg)
         self._attr_native_value = decoded.pir_status
@@ -97,7 +97,7 @@ class EltakoVoltageSensor_A5_07_01(EltakoSensor):
         suggested_display_precision=1,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_07_01.decode_message(msg)
         self._attr_native_value = decoded.support_voltage
@@ -114,7 +114,7 @@ class EltakoPowerSensor_A5_12_01(EltakoSensor):
         state_class=SensorStateClass.MEASUREMENT,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_12_01.decode_message(msg)
         if decoded.learn_button != 1:
@@ -144,7 +144,7 @@ class EltakoElectricEnergySensor_A5_12_01(EltakoSensor):
         super().__init__(config_entry, subentry)
         self._tariff = tariff
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_12_01.decode_message(msg)
 
@@ -192,7 +192,7 @@ class EltakoGasFlowRateSensor_A5_12_02(EltakoSensor):
         state_class=SensorStateClass.MEASUREMENT,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_12_02.decode_message(msg)
         if decoded.learn_button != 1:
@@ -215,7 +215,7 @@ class EltakoGasMeterSensor_A5_12_02(EltakoSensor):
         state_class=SensorStateClass.TOTAL_INCREASING,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_12_02.decode_message(msg)
         if decoded.learn_button != 1:
@@ -241,7 +241,7 @@ class EltakoWaterFlowRateSensor_A5_12_03(EltakoSensor):
         state_class=SensorStateClass.MEASUREMENT,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_12_03.decode_message(msg)
         if decoded.learn_button != 1:
@@ -264,7 +264,7 @@ class EltakoWaterMeterSensor_A5_12_03(EltakoSensor):
         state_class=SensorStateClass.TOTAL_INCREASING,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_12_03.decode_message(msg)
         if decoded.learn_button != 1:
@@ -291,7 +291,7 @@ class EltakoWeatherStationIlluminanceDawnSensor_A5_13_01(EltakoSensor):
         suggested_display_precision=0,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_13_01.decode_message(msg)
         if decoded.learn_button != 1:
@@ -313,7 +313,7 @@ class EltakoWeatherStationTemperatureSensor_A5_13_01(EltakoSensor):
         suggested_display_precision=1,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_13_01.decode_message(msg)
         if decoded.learn_button != 1:
@@ -335,7 +335,7 @@ class EltakoWeatherStationWindSpeedSensor_A5_13_01(EltakoSensor):
         suggested_display_precision=2,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_13_01.decode_message(msg)
         if decoded.learn_button != 1:
@@ -358,7 +358,7 @@ class EltakoWeatherStationIlluminanceWestSensor_A5_13_02(EltakoSensor):
         suggested_display_precision=0,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_13_01.decode_message(msg)  # actually A5_13_02
         if decoded.learn_button != 1:
@@ -382,7 +382,7 @@ class EltakoWeatherStationIlluminanceCentralSensor_A5_13_02(EltakoSensor):
         suggested_display_precision=0,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_13_01.decode_message(msg)  # actually A5_13_02
         if decoded.learn_button != 1:
@@ -406,7 +406,7 @@ class EltakoWeatherStationIlluminanceEastSensor_A5_13_02(EltakoSensor):
         suggested_display_precision=0,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_13_01.decode_message(msg)  # actually A5_13_02
         if decoded.learn_button != 1:
@@ -432,7 +432,7 @@ class EltakoTemperatureSensor_A5_04_01(EltakoSensor):
 
     entity_description = TEMPERATURE_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_04_01.decode_message(msg)
         self._attr_native_value = decoded.current_temperature
@@ -444,7 +444,7 @@ class EltakoTemperatureSensor_A5_04_02(EltakoSensor):
 
     entity_description = TEMPERATURE_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_04_02.decode_message(msg)
         self._attr_native_value = decoded.current_temperature
@@ -456,7 +456,7 @@ class EltakoTemperatureSensor_A5_04_03(EltakoSensor):
 
     entity_description = TEMPERATURE_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_04_03.decode_message(msg)
         self._attr_native_value = decoded.current_temperature
@@ -468,7 +468,7 @@ class EltakoTemperatureSensor_A5_08_01(EltakoSensor):
 
     entity_description = TEMPERATURE_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_08_01.decode_message(msg)
         self._attr_native_value = decoded.current_temperature
@@ -480,7 +480,7 @@ class EltakoTemperatureSensor_A5_10_03(EltakoSensor):
 
     entity_description = TEMPERATURE_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_10_03.decode_message(msg)
         self._attr_native_value = decoded.current_temperature
@@ -492,7 +492,7 @@ class EltakoTemperatureSensor_A5_10_06(EltakoSensor):
 
     entity_description = TEMPERATURE_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_10_06.decode_message(msg)
         self._attr_native_value = decoded.current_temperature
@@ -504,7 +504,7 @@ class EltakoTemperatureSensor_A5_10_12(EltakoSensor):
 
     entity_description = TEMPERATURE_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_10_12.decode_message(msg)
         self._attr_native_value = decoded.current_temperature
@@ -525,7 +525,7 @@ class EltakoIlluminationSensor_A5_06_01(EltakoSensor):
 
     entity_description = ILLUMNATION_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_06_01.decode_message(msg)
         self._attr_native_value = decoded.illumination
@@ -537,7 +537,7 @@ class EltakoIlluminationSensor_A5_08_01(EltakoSensor):
 
     entity_description = ILLUMNATION_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_08_01.decode_message(msg)
         self._attr_native_value = decoded.illumination
@@ -555,7 +555,7 @@ class EltakoBatteryVoltageSensor_A5_08_01(EltakoSensor):
         state_class=SensorStateClass.MEASUREMENT,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_08_01.decode_message(msg)
         self._attr_native_value = decoded.supply_voltage
@@ -577,7 +577,7 @@ class EltakoTargetTemperatureSensor_A5_10_03(EltakoSensor):
 
     entity_description = TARGET_TEMPERATURE_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_10_03.decode_message(msg)
         self._attr_native_value = round(2 * decoded.target_temperature, 0) / 2
@@ -589,7 +589,7 @@ class EltakoTargetTemperatureSensor_A5_10_06(EltakoSensor):
 
     entity_description = TARGET_TEMPERATURE_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_10_06.decode_message(msg)
         self._attr_native_value = round(2 * decoded.target_temperature, 0) / 2
@@ -601,7 +601,7 @@ class EltakoTargetTemperatureSensor_A5_10_12(EltakoSensor):
 
     entity_description = TARGET_TEMPERATURE_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_10_12.decode_message(msg)
         self._attr_native_value = round(2 * decoded.target_temperature, 0) / 2
@@ -622,7 +622,7 @@ class EltakoHumiditySensor_A5_04_01(EltakoSensor):
 
     entity_description = HUMIDITY_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_04_01.decode_message(msg)
         self._attr_native_value = decoded.humidity
@@ -634,7 +634,7 @@ class EltakoHumiditySensor_A5_04_02(EltakoSensor):
 
     entity_description = HUMIDITY_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_04_02.decode_message(msg)
         self._attr_native_value = decoded.humidity
@@ -646,7 +646,7 @@ class EltakoHumiditySensor_A5_04_03(EltakoSensor):
 
     entity_description = HUMIDITY_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_04_03.decode_message(msg)
         self._attr_native_value = decoded.humidity
@@ -658,7 +658,7 @@ class EltakoHumiditySensor_A5_10_12(EltakoSensor):
 
     entity_description = HUMIDITY_DESCRIPTION
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_10_12.decode_message(msg)
         self._attr_native_value = decoded.humidity
@@ -675,7 +675,7 @@ class EltakoVOCSensor_A5_09_0C(EltakoSensor):
         state_class=SensorStateClass.MEASUREMENT,
     )
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of the sensor."""
         decoded = A5_09_0C.decode_message(msg)
         if decoded.voc_type.index == VOC_SubstancesType.VOCT_TOTAL.index:

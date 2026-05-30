@@ -94,7 +94,7 @@ class EltakoDimmableLight(EltakoEntity, LightEntity):
             self._attr_is_on = False
             self.schedule_update_ha_state()
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of this device."""
         if msg.org == 0x05:
             _LOGGER.debug(
@@ -163,7 +163,7 @@ class EltakoSwitchableLight(EltakoEntity, LightEntity):
             self._attr_is_on = False
             self.schedule_update_ha_state()
 
-    def value_changed(self, msg: ESP2Message):
+    def value_changed(self, msg: ESP2Message) -> None:
         """Update the internal state of this device."""
         decoded = M5_38_08.decode_message(msg)
 
