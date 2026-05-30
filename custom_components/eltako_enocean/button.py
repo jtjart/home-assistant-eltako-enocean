@@ -46,7 +46,7 @@ class EltakoGatewayReconnectButton(ButtonEntity):
 
     async def async_press(self) -> None:
         """Reconnect serial bus."""
-        self._attr_gateway.reconnect()
+        self._attr_gateway._reconnect()
 
 
 async def async_setup_entry(
