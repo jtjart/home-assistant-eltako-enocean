@@ -3,6 +3,7 @@
 DOMAIN = "eltako_enocean"
 MANUFACTURER = "Eltako"
 
+CONF_ASSUMED_STATE = "assumed_state"
 CONF_FAST_STATUS_CHANGE = "fast_status_change"
 CONF_GATEWAY_AUTO_RECONNECT = "auto_reconnect"
 CONF_GATEWAY_MESSAGE_DELAY = "message_delay"
