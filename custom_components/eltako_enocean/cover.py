@@ -24,7 +24,13 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import UndefinedType
 
 from . import EltakoConfigEntry
-from .const import CONF_ASSUMED_STATE, CONF_SENDER_ID, CONF_TIME_CLOSES, CONF_TIME_OPENS, CONF_TIME_TILTS
+from .const import (
+    CONF_ASSUMED_STATE,
+    CONF_SENDER_ID,
+    CONF_TIME_CLOSES,
+    CONF_TIME_OPENS,
+    CONF_TIME_TILTS,
+)
 from .device import MODELS, CoverEntities
 from .entity import EltakoEntity
 
