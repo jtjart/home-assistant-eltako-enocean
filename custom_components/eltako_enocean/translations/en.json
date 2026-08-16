@@ -54,6 +54,7 @@
             "step": {
                 "cover": {
                     "data": {
+                        "assumed_state": "Assumed state",
                         "device_class": "Device class",
                         "id": "Device ID",
                         "model": "Device model",
