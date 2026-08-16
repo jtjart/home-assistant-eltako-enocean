@@ -28,6 +28,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.schema_config_entry_flow import SchemaFlowError
 
 from .const import (
+    CONF_ASSUMED_STATE,
     CONF_FAST_STATUS_CHANGE,
     CONF_GATEWAY_AUTO_RECONNECT,
     CONF_GATEWAY_MESSAGE_DELAY,
