@@ -24,7 +24,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import UndefinedType
 
 from . import EltakoConfigEntry
-from .const import CONF_SENDER_ID, CONF_TIME_CLOSES, CONF_TIME_OPENS, CONF_TIME_TILTS
+from .const import CONF_ASSUMED_STATE, CONF_SENDER_ID, CONF_TIME_CLOSES, CONF_TIME_OPENS, CONF_TIME_TILTS
 from .device import MODELS, CoverEntities
 from .entity import EltakoEntity
 
@@ -56,6 +56,8 @@ class EltakoStandardCover(EltakoEntity, CoverEntity):
         self._time_tilts: float | None = None
 
         self._attr_is_closed = None  # means undefined state
+
+        self._attr_assumed_state = subentry.data.get(CONF_ASSUMED_STATE, False)
 
         self._attr_supported_features = (
             CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE | CoverEntityFeature.STOP
