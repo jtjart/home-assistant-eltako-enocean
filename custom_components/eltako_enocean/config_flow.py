@@ -225,6 +225,7 @@ class DeviceSubentryFlowHandler(ConfigSubentryFlow):
                 vol.Optional(CONF_TIME_TILTS): vol.All(
                     vol.Coerce(float), vol.Range(min=1, max=255)
                 ),
+                vol.Optional (CONF_ASSUMED_STATE, default=False): bool,
             },
             extra_validate=_validate_cover,
         )
