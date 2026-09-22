@@ -25,6 +25,9 @@ class BinarySensorEntities(Enum):
 class ButtonEntities(Enum):
     """Representation of the different Eltako button entity types."""
 
+    A5_38_08_PRIORITY_ON = auto()
+    A5_38_08_PRIORITY_OFF = auto()
+
 
 class CoverEntities(Enum):
     """Representation of the different Eltako cover entity types."""
@@ -110,8 +113,8 @@ class GatewayModelDefinition(ModelDefinition):
 
 GATEWAY_MODELS: dict[str, GatewayModelDefinition] = {
     "FAM14": GatewayModelDefinition("FAM14"),
-    "FGW14_USB": GatewayModelDefinition("FGW14USB"),
-    "FAM_USB": GatewayModelDefinition("FAMUSB", baud_rate=9600),
+    "FGW14_USB": GatewayModelDefinition("FGW14-USB"),
+    "FAM_USB": GatewayModelDefinition("FAM-USB", baud_rate=9600),
     "USB_300": GatewayModelDefinition("USB 300", is_bus_gw=False),
     "ESP3": GatewayModelDefinition("ESP3 Gateway", is_bus_gw=False),
 }
@@ -193,23 +196,70 @@ SENSOR_MODELS: dict[str, ModelDefinition] = {
 }
 
 SWITCH_MODELS: dict[str, ModelDefinition] = {
-    "FSR14_2x": ModelDefinition("FSR14-2x", switches={SwitchEntities.STANDARD}),
-    "FSR14_4x": ModelDefinition("FSR14-4x", switches={SwitchEntities.STANDARD}),
+    "FSR14_2x": ModelDefinition(
+        "FSR14-2x",
+        switches={SwitchEntities.STANDARD},
+        buttons={
+            ButtonEntities.A5_38_08_PRIORITY_ON,
+            ButtonEntities.A5_38_08_PRIORITY_OFF,
+        },
+    ),
+    "FSR14_4x": ModelDefinition(
+        "FSR14-4x",
+        switches={SwitchEntities.STANDARD},
+        buttons={
+            ButtonEntities.A5_38_08_PRIORITY_ON,
+            ButtonEntities.A5_38_08_PRIORITY_OFF,
+        },
+    ),
     "FSR14M_2x": ModelDefinition(
         "FSR14M-2x",
         switches={SwitchEntities.STANDARD},
         sensors={SensorEntities.A5_12_01_POWER},
+        buttons={
+            ButtonEntities.A5_38_08_PRIORITY_ON,
+            ButtonEntities.A5_38_08_PRIORITY_OFF,
+        },
     ),
-    "FSR14SSR": ModelDefinition("FSR14SSR", switches={SwitchEntities.STANDARD}),
+    "FSR14SSR": ModelDefinition(
+        "FSR14SSR",
+        switches={SwitchEntities.STANDARD},
+        buttons={
+            ButtonEntities.A5_38_08_PRIORITY_ON,
+            ButtonEntities.A5_38_08_PRIORITY_OFF,
+        },
+    ),
     "FSR71_2x_230V": ModelDefinition(
-        "FSR71-2x-230V", switches={SwitchEntities.STANDARD}
+        "FSR71-2x-230V",
+        switches={SwitchEntities.STANDARD},
+        buttons={
+            ButtonEntities.A5_38_08_PRIORITY_ON,
+            ButtonEntities.A5_38_08_PRIORITY_OFF,
+        },
     ),
-    "FSR71NP_230V": ModelDefinition("FSR71NP-230V", switches={SwitchEntities.STANDARD}),
+    "FSR71NP_230V": ModelDefinition(
+        "FSR71NP-230V",
+        switches={SwitchEntities.STANDARD},
+        buttons={
+            ButtonEntities.A5_38_08_PRIORITY_ON,
+            ButtonEntities.A5_38_08_PRIORITY_OFF,
+        },
+    ),
     "FSR71NP_2x_230V": ModelDefinition(
-        "FSR71NP-2x-230V", switches={SwitchEntities.STANDARD}
+        "FSR71NP-2x-230V",
+        switches={SwitchEntities.STANDARD},
+        buttons={
+            ButtonEntities.A5_38_08_PRIORITY_ON,
+            ButtonEntities.A5_38_08_PRIORITY_OFF,
+        },
     ),
     "FSR71NP_4x_230V": ModelDefinition(
-        "FSR71NP-4x-230V", switches={SwitchEntities.STANDARD}
+        "FSR71NP-4x-230V",
+        switches={SwitchEntities.STANDARD},
+        buttons={
+            ButtonEntities.A5_38_08_PRIORITY_ON,
+            ButtonEntities.A5_38_08_PRIORITY_OFF,
+        },
     ),
     "FMS14": ModelDefinition("FMS14", switches={SwitchEntities.DUMB}),
 }
