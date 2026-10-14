@@ -70,7 +70,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: EltakoConfigEntry) -> bo
             manufacturer=MANUFACTURER,
             model=MODELS[subentry.data[CONF_MODEL]].name,
             name=subentry.data[CONF_NAME],
-            via_device=(DOMAIN, entry.entry_id),
+            via_device_id=dr.async_get_device_id_by_identifier(
+                hass,
+                identifier=(DOMAIN, entry.entry_id),
+                config_entry_id=entry.entry_id,
+            ),
         )
 
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
